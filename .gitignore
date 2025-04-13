@@ -1,0 +1,9 @@
+; Directory Ignore
+bin/
+src/.vscode
+res/
+sp/
+
+; File Ignore
+KingField
+KingField.properties
