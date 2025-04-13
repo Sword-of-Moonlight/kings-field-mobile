@@ -4,6 +4,7 @@ src/.vscode
 src/build
 res/
 sp/
+temp/
 
 ; File Ignore
 KingField

@@ -73,8 +73,8 @@ public final class KFM_ResourceManager
                 resourceSize = dis.readInt();
 
                 // Create the new resource item...
-                resourceItems[i] = new KFM_ResourceItem(resourceOffset, i);
-
+                resourceItems[i] = new KFM_ResourceItem(resourceOffset, resourceSize);
+                
                 // Increase resource offset by the size of the current resource
                 resourceOffset += resourceSize;
             }
