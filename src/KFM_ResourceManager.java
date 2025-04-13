@@ -9,12 +9,18 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public final class KingsField_Resource
+public final class KFM_ResourceManager
 {
     final static int REMOTE_BUFFER_COUNT = 2;
     final static int REMOTE_BUFFER_BASE  = 20480;
     final static int REMOTE_BUFFER_MSIZE = 102400;  // 100KB max size for remote buffers
 
+    // A list of resource offset-size pairs.
+    static KFM_ResourceItem[] resourceItems;
+
+    /**
+     * Initializes the resource system 
+    **/
     public static void Initialize()
     {
         try
@@ -49,8 +55,31 @@ public final class KingsField_Resource
                 dos.close();
             }
 
-            // Load the resource size table
+            // Load the resource size table header
+            dis = Connector.openDataInputStream("scratchpad:///0;pos=" + REMOTE_BUFFER_BASE + ",length=4");
+            int numResources = dis.readInt();
+            dis.close();
 
+            // Now we can read the resource table itself
+            dis = Connector.openDataInputStream("scratchpad:///0;pos=" + (REMOTE_BUFFER_BASE + 4) + ",length=" + (numResources * 4));
+            resourceItems = new KFM_ResourceItem[numResources];
+
+            int resourceOffset = (REMOTE_BUFFER_BASE + 4) + (numResources * 4); // Start at end of table
+            int resourceSize   = 0;
+
+            for (int i = 0; i < numResources; ++i)
+            {
+                // Read the resource size...
+                resourceSize = dis.readInt();
+
+                // Create the new resource item...
+                resourceItems[i] = new KFM_ResourceItem(resourceOffset, i);
+
+                // Increase resource offset by the size of the current resource
+                resourceOffset += resourceSize;
+            }
+
+            dis.close();
         } 
         catch (Exception exception)
         {
@@ -65,6 +94,43 @@ public final class KingsField_Resource
             // After user confirms dialog, quit.
             IApplication.getCurrentApp().terminate();
         }
+    }
+
+    /**
+     * Loads a resource from the scratchpad
+    **/
+    public static byte[] LoadScratchpadResource(int resourceId) throws Exception
+    {
+        // Bounds check...
+        if (resourceId < 0 || resourceId > resourceItems.length)
+            throw new Exception("Scratchpad Resource Index Out of Bounds");
+
+        // Get the resource item
+        KFM_ResourceItem resourceItem = resourceItems[resourceId];
+
+        // Open up a data stream and read its content
+        DataInputStream dis = Connector.openDataInputStream("scratchpad:///0;pos=" + resourceItem.ResourceSPOffset + ",length=" + resourceItem.ResourceSize);
+
+        byte[] resourceBuffer = new byte[resourceItem.ResourceSize];
+        dis.readFully(resourceBuffer);
+        dis.close();
+
+        return resourceBuffer;
+    }
+
+    public static void LoadScratchpadResourceToBuffer(int resourceId, byte[] resourceBuffer) throws Exception
+    {
+        // Bounds check...
+        if (resourceId < 0 || resourceId > resourceItems.length)
+            throw new Exception("Scratchpad Resource Index Out of Bounds");
+
+        // Get the resource item
+        KFM_ResourceItem resourceItem = resourceItems[resourceId];
+
+        // Open up a data stream and read its content
+        DataInputStream dis = Connector.openDataInputStream("scratchpad:///0;pos=" + resourceItem.ResourceSPOffset + ",length=" + resourceBuffer.length);
+        dis.readFully(resourceBuffer);
+        dis.close();
     }
 
     /**

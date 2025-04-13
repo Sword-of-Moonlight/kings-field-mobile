@@ -1,6 +1,7 @@
 ; Directory Ignore
 bin/
 src/.vscode
+src/build
 res/
 sp/
 

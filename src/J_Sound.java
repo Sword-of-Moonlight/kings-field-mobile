@@ -51,7 +51,7 @@ class J_Sound {
       this.m_AudioTrack = AudioPresenter.getAudioPresenter(0);
       this.m_AudioTrack.setMediaListener(paramKingsField_P6Canvas);
       for (byte b = 0; b < this.m_nAudioNum; b++) {
-        byte[] arrayOfByte = KingsField_P6Canvas.loadResourceData(49 + b);
+        byte[] arrayOfByte = KFM_ResourceManager.LoadScratchpadResource(49 + b);
         this.m_aAudioData[b] = MediaManager.getSound(arrayOfByte);
         this.m_aAudioData[b].use();
       } 

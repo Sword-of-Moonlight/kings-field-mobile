@@ -535,7 +535,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
     }
 
     static Image loadImage(int n) throws Exception {
-        byte[] byArray = KingsField_P6Canvas.loadResourceData(n);
+        byte[] byArray = KFM_ResourceManager.LoadScratchpadResource(n);
         MediaImage mediaImage = MediaManager.getImage(byArray);
         mediaImage.use();
         return mediaImage.getImage();
@@ -555,7 +555,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
     Figure loadFigure(int n) {
         Figure figure = null;
         try {
-            byte[] byArray = KingsField_P6Canvas.loadResourceData(n);
+            byte[] byArray = KFM_ResourceManager.LoadScratchpadResource(n);
             figure = new Figure(byArray);
         }
         catch (Exception exception) {
@@ -567,7 +567,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
     ActionTable loadActionTable(int n) {
         ActionTable actionTable = null;
         try {
-            byte[] byArray = KingsField_P6Canvas.loadResourceData(n);
+            byte[] byArray = KFM_ResourceManager.LoadScratchpadResource(n);
             actionTable = new ActionTable(byArray);
         }
         catch (Exception exception) {
@@ -584,7 +584,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         Texture texture = null;
         try 
         {
-            byte[] byArray = KingsField_P6Canvas.loadResourceData(n);
+            byte[] byArray = KFM_ResourceManager.LoadScratchpadResource(n);
             texture = new Texture(byArray, !bl);
         }
         catch (Exception exception) 
@@ -599,123 +599,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
 	**/
     Texture loadTexture(byte[] byArray, boolean bl) {
         return new Texture(byArray, !bl);
-    }
-
-    /**
-	 * Loads a resource file from the SP.
-	**/
-    static byte[] loadResourceData(int n) throws Exception {
-        int n2 = m_iDataOffset;
-        for (int i = 0; i < n; ++i) {
-            n2 += m_arSizeTable[i];
-        }
-        DataInputStream dataInputStream = Connector.openDataInputStream("scratchpad:///0;pos=" + n2 + ",length=" + m_arSizeTable[n]);
-        byte[] byArray = new byte[m_arSizeTable[n]];
-        dataInputStream.read(byArray);
-        dataInputStream.close();
-        return byArray;
-    }
-
-    /**
-	 * Connects to a URL and downloads a resource, stores it in the sp file at spStoreOffset.
-	**/
-    int downloadResourceData(String string, int n) {
-        int n2 = 0;
-        OutputStream outputStream = null;
-        HttpConnection httpConnection = null;
-        InputStream inputStream = null;
-        try {
-            int n3;
-            outputStream = Connector.openOutputStream("scratchpad:///0;pos=" + n);
-            httpConnection = (HttpConnection)((Object)Connector.open(string, 1, true));
-            httpConnection.setRequestMethod("GET");
-            httpConnection.connect();
-            inputStream = httpConnection.openInputStream();
-            byte[] byArray = new byte[102400];
-            while ((n3 = inputStream.read(byArray)) > 0) {
-                outputStream.write(byArray, 0, n3);
-                n2 += n3;
-            }
-        }
-        catch (Exception exception) {
-            n2 = -1;
-        }
-        try {
-            if (inputStream != null) {
-                inputStream.close();
-            }
-            if (httpConnection != null) {
-                httpConnection.close();
-            }
-            if (outputStream != null) {
-                outputStream.close();
-            }
-        }
-        catch (Exception exception) {
-            // empty catch block
-        }
-        return n2;
-    }
-
-    /**
-	 * This function is responsible for initializing all resource data.
-	**/
-    void initResourceData() {
-        try 
-        {
-            int n;
-            Graphics graphics = (Graphics)((Object)this.i_g3d);
-            int n2 = this.getWidth();
-            int n3 = this.getHeight();
-            graphics.lock();
-            graphics.setColor(this.BLACK);
-            graphics.fillRect(0, 0, n2, n3);
-            this.setFont(graphics, this.m_font_small);
-            graphics.setColor(this.WHITE);
-            this.drawString(graphics, "NOW LOADING...", n2 / 2, n3 / 2, 3);
-            graphics.unlock(true);
-
-            DataInputStream dataInputStream = Connector.openDataInputStream("scratchpad:///0;pos=0,length=4");
-            int n4 = dataInputStream.readInt();
-            dataInputStream.close();
-            if (n4 != 1) {
-                String[] stringArray = IApplication.getCurrentApp().getArgs();
-                String string = stringArray != null && stringArray.length > 0 ? stringArray[0] : IApplication.getCurrentApp().getSourceURL();
-                int n5 = 0;
-                for (n = 0; n < 2; ++n) {
-                    int n6 = this.downloadResourceData(string + "res" + n + ".bin", 20480 + n5);
-                    if (n6 <= 0) {
-                        Dialog dialog = new Dialog(2, "ERROR");
-                        dialog.setText("COULD NOT DOWNLOAD DATA!");
-                        dialog.show();
-                        IApplication.getCurrentApp().terminate();
-                    } else {
-                        n5 += n6;
-                    }
-                    // system.gc();
-                }
-                DataOutputStream dataOutputStream = Connector.openDataOutputStream("scratchpad:///0;pos=0");
-                dataOutputStream.writeInt(1);
-                dataOutputStream.close();
-            }
-            m_iDataOffset = 20480;
-            dataInputStream = Connector.openDataInputStream("scratchpad:///0;pos=" + m_iDataOffset + ",length=4");
-            int n7 = dataInputStream.readInt();
-            dataInputStream.close();
-            m_arSizeTable = new int[n7];
-            dataInputStream = Connector.openDataInputStream("scratchpad:///0;pos=" + (m_iDataOffset += 4) + ",length=" + n7 * 4);
-            for (n = 0; n < n7; ++n) {
-                KingsField_P6Canvas.m_arSizeTable[n] = dataInputStream.readInt();
-                m_iDataOffset += 4;
-            }
-            dataInputStream.close();
-        }
-        catch (Exception exception) {
-            Dialog dialog = new Dialog(2, "ERROR");
-            dialog.setText("COULD NOT LOAD DATA!");
-            dialog.show();
-            IApplication.getCurrentApp().terminate();
-        }
     }
 
     /**
@@ -849,38 +732,51 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.i_g3d = (Graphics3D)((Object)this.getGraphics());
     }
 
-    private void initialize() {
+    private void initialize() 
+    {
         int n;
         this.m_J_Dev = new J_Device();
         this.dispLogo();
-        this.initResourceData();
+
+        // Initialize the resource manager
+        KFM_ResourceManager.Initialize();
+
         this.m_J_Dev.Init();
         this.m_J_rp = new J_ReadPNG();
         this.m_J_se = new J_Sound();
         this.m_J_se.init(this);
         this.roomSetup();
         this.dataSetup();
-        try {
-            byte[] byArray = KingsField_P6Canvas.loadResourceData(9);
-            System.arraycopy(byArray, 0, this.m_buf, 0, this.m_buf.length);
+
+        try 
+        {
+            KFM_ResourceManager.LoadScratchpadResourceToBuffer(9, m_buf);
         }
-        catch (Exception exception) {
-            KingsField_P6Canvas.Print("error plt base");
+        catch (Exception exception) 
+        {
+            Print("error plt base");
         }
-        for (n = 0; n < this.m_plt_num; ++n) {
+
+        for (n = 0; n < this.m_plt_num; ++n)
+        {
             this.m_plt_now[n] = 0;
             this.m_plt_past[n] = 0;
         }
-        for (n = 0; n < 10; ++n) {
-            for (int i = 0; i < 900; ++i) {
+
+        for (n = 0; n < 10; ++n) 
+        {
+            for (int i = 0; i < 900; ++i) 
+            {
                 this.m_map_memory[n][i] = false;
             }
         }
+
         this.checkTitle();
         this.openingStart();
     }
 
-    private void checkTitle() {
+    private void checkTitle() 
+    {
         byte by;
         try {
             this.m_data = null;
@@ -5880,7 +5776,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
             int n2 = 192;
             byArray = new byte[n];
             try {
-                byte[] byArray2 = KingsField_P6Canvas.loadResourceData(48);
+                byte[] byArray2 = KFM_ResourceManager.LoadScratchpadResource(48);
                 System.arraycopy(byArray2, 0, byArray, 0, n);
                 System.arraycopy(byArray2, n, this.m_buf, 54, n2);
             }
@@ -5922,7 +5818,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
             StringBuffer stringBuffer = new StringBuffer("palet.plt");
             stringBuffer.insert(5, by2);
             try {
-                byte[] byArray3 = KingsField_P6Canvas.loadResourceData(43 + by2);
+                byte[] byArray3 = KFM_ResourceManager.LoadScratchpadResource(43 + by2);
                 System.arraycopy(byArray3, 0, byArray, 0, n3 - 192);
                 System.arraycopy(byArray3, n3 - 192, this.m_buf, 54 + n3, n);
             }
