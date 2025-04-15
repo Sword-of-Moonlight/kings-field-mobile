@@ -3789,36 +3789,36 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         int uvDiv;
         int vertDiv;
         int subdivs;    // The amount of times to divide a quad
-        int n6;
+        int uvSet;
         int surface;    // UNDER, FLOOR, CEILING, SHUTTER ??
 
-        int n8 = this.gridDistance(tile1D, this.m_player_grid, 0);
+        int distToPlayer = this.gridDistance(tile1D, this.m_player_grid, 0);
         int xBase = 1000 * (tile1D % this.m_grid_x);  // X Base for Tile
         int zBase = 1000 * (tile1D / this.m_grid_x);  // Z Base for Tile
 
         if (yPosition == -200)      // Add to 'UNDER' layer (water)
         {
             surface = 0;
-            n6 = 7;
+            uvSet = 7;
         } 
         else if (yPosition == 0)    // Add to 'FLOOR' layer (floor)
         {
             surface = 1;
-            n6 = tile1D == this.m_start_grid || tile1D == this.m_goal_grid ? 6 : (player.status[KFM_Player.COND_DARK] >= 0 ? n8 : n8 - 3);
+            uvSet = tile1D == this.m_start_grid || tile1D == this.m_goal_grid ? 6 : (player.status[KFM_Player.COND_DARK] >= 0 ? distToPlayer : distToPlayer - 3);
         } 
         else                        // Add to 'ABOVE' layer (ceiling)
         {
             surface = 2;
-            n6 = player.status[KFM_Player.COND_DARK] >= 0 ? n8 : n8 - 3;
+            uvSet = player.status[KFM_Player.COND_DARK] >= 0 ? distToPlayer : distToPlayer - 3;
         }
 
-        if (n6 < 0) 
-            n6 = 0;
+        if (uvSet < 0) 
+            uvSet = 0;
 
         if (this.m_shutter_draw) 
             surface = 3;
 
-        if (n8 <= 1) // The closest area surrounding the player is rendered in higher quality
+        if (distToPlayer <= 1) // The closest area surrounding the player is rendered in higher quality
         {
             subdivs = 4;
             vertDiv = 500;
@@ -3861,14 +3861,14 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
             int v1 = (i / 2) * 32;
             int v2 = (i / 2) * 32 + uvDiv;
 
-            this.m_uv[surface][uvID + 0] = this.m_uv_corner[n6][0] + u1;
-            this.m_uv[surface][uvID + 1] = this.m_uv_corner[n6][1] + v1;
-            this.m_uv[surface][uvID + 2] = this.m_uv_corner[n6][0] + u2;
-            this.m_uv[surface][uvID + 3] = this.m_uv_corner[n6][1] + v1;
-            this.m_uv[surface][uvID + 4] = this.m_uv_corner[n6][0] + u2;
-            this.m_uv[surface][uvID + 5] = this.m_uv_corner[n6][1] + v2;
-            this.m_uv[surface][uvID + 6] = this.m_uv_corner[n6][0] + u1;
-            this.m_uv[surface][uvID + 7] = this.m_uv_corner[n6][1] + v2;
+            this.m_uv[surface][uvID + 0] = this.m_uv_corner[uvSet][0] + u1;
+            this.m_uv[surface][uvID + 1] = this.m_uv_corner[uvSet][1] + v1;
+            this.m_uv[surface][uvID + 2] = this.m_uv_corner[uvSet][0] + u2;
+            this.m_uv[surface][uvID + 3] = this.m_uv_corner[uvSet][1] + v1;
+            this.m_uv[surface][uvID + 4] = this.m_uv_corner[uvSet][0] + u2;
+            this.m_uv[surface][uvID + 5] = this.m_uv_corner[uvSet][1] + v2;
+            this.m_uv[surface][uvID + 6] = this.m_uv_corner[uvSet][0] + u1;
+            this.m_uv[surface][uvID + 7] = this.m_uv_corner[uvSet][1] + v2;
             
             // Increment number of polys in surface...
             this.m_poly_num[surface]++;
