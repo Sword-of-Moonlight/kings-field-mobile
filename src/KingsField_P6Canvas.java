@@ -1,4 +1,3 @@
-import com.nttdocomo.io.HttpConnection;
 import com.nttdocomo.opt.ui.j3d.ActionTable;
 import com.nttdocomo.opt.ui.j3d.AffineTrans;
 import com.nttdocomo.opt.ui.j3d.Figure;
@@ -8,8 +7,6 @@ import com.nttdocomo.opt.ui.j3d.PrimitiveArray;
 import com.nttdocomo.opt.ui.j3d.Texture;
 import com.nttdocomo.opt.ui.j3d.Vector3D;
 import com.nttdocomo.ui.Canvas;
-import com.nttdocomo.ui.Dialog;
-import com.nttdocomo.ui.Font;
 import com.nttdocomo.ui.Graphics;
 import com.nttdocomo.ui.IApplication;
 import com.nttdocomo.ui.Image;
@@ -20,29 +17,21 @@ import com.nttdocomo.ui.MediaPresenter;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Random;
 import javax.microedition.io.Connector;
+
 
 public final class KingsField_P6Canvas extends Canvas implements MediaListener 
 {
     // CLEANED SHIT
-    private KingsField_Player player = new KingsField_Player();
+    private KFM_Player player = new KFM_Player();
 
     // OLD PLAYER
     private int m_player_grid;
     private byte m_player_dire;
     private byte m_player_eq;
 
-    private byte[][] m_player_condi = new byte[4][2];
-    private boolean[] m_condi_cure = new boolean[4];
-
     // OLD SHIT
-    final int APP_VERSION;
-    final int SP_VERSION_DATA;
-    final int SP_GAME_DATA;
-    final int SP_RESOURCE_DATA;
     final int[] m_arGameDataSize = new int[]{87, 229, 900, 900, 900, 900, 900, 900, 900, 900, 900, 900, 0, 0, 0, 87, 229, 900, 900, 900, 900, 900, 900, 900, 900, 900, 900, 0, 0, 0, 7, 105};
     final int DS_HCENTER;
     final int DS_VCENTER;
@@ -51,9 +40,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
     final int DS_TOP;
     final int DS_BOTTOM;
     Graphics3D i_g3d;
-    Font m_font_select = Font.getFont(0x71000100);
-    static int[] m_arSizeTable;
-    static int m_iDataOffset;
     J_Device m_J_Dev;
     J_ReadPNG m_J_rp;
     J_Sound m_J_se;
@@ -63,30 +49,30 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
     private byte m_scene;
     final byte GAME_OPEN;
     final byte GAME_TITLE;
-    final byte GAME_LIVE = (byte)2;
-    final byte GAME_OVER = (byte)3;
+    final byte GAME_LIVE  = (byte)2;
+    final byte GAME_OVER  = (byte)3;
     final byte GAME_CLEAR = (byte)4;
-    final byte GAME_UPDN = (byte)5;
-    final byte GAME_SAVE = (byte)6;
-    final byte GAME_ENDI = (byte)7;
+    final byte GAME_UPDN  = (byte)5;
+    final byte GAME_SAVE  = (byte)6;
+    final byte GAME_ENDI  = (byte)7;
 
     private byte m_mode;
     final byte MODE_GETS;
-    final byte MODE_SHUT = (byte)2;
-    final byte MODE_CURE = (byte)3;
-    final byte MODE_HINT = (byte)4;
-    final byte MODE_SAVE = (byte)5;
-    final byte MODE_MENU = (byte)6;
-    final byte MODE_ITEM = (byte)7;
-    final byte MODE_USE = (byte)8;
+    final byte MODE_SHUT  = (byte)2;
+    final byte MODE_CURE  = (byte)3;
+    final byte MODE_HINT  = (byte)4;
+    final byte MODE_SAVE  = (byte)5;
+    final byte MODE_MENU  = (byte)6;
+    final byte MODE_ITEM  = (byte)7;
+    final byte MODE_USE   = (byte)8;
     final byte MODE_EQUIP = (byte)9;
     final byte MODE_EQSET = (byte)10;
-    final byte MODE_GAME = (byte)11;
+    final byte MODE_GAME  = (byte)11;
     final byte MODE_QSAVE = (byte)12;
-    final byte MODE_MAP = (byte)13;
-    final byte MODE_KEY = (byte)14;
-    final byte MODE_OPT = (byte)15;
-    final byte MODE_EXPL = (byte)16;
+    final byte MODE_MAP   = (byte)13;
+    final byte MODE_KEY   = (byte)14;
+    final byte MODE_OPT   = (byte)15;
+    final byte MODE_EXPL  = (byte)16;
 
     private byte m_cursor_now;
     private byte m_cursor_place;
@@ -331,15 +317,9 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
     private int m_wep_rotX = 2048;
     private int m_wep_rotY = 384;
     private int m_wep_rotZ = 0;
-    private int m_view_step;
-    final int m_view_stepA;
-    private int m_view_rot;
-    final int m_view_rotA;
     private int m_rotL_add;
     private int m_rotR_add;
-    private int m_view_area = 6;
     private int m_step_count;
-    private boolean m_player_damaged = false;
     private boolean m_set_flag = false;
     private boolean m_paint_flag = false;
     private boolean m_levelup_flag = false;
@@ -403,8 +383,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
 
     private boolean[] m_player_area;
     private boolean[] m_map_area;
-    Font m_font_small = Font.getFont(1895826432);
-    Font m_font_default = Font.getFont(0x71000100);
+
     private int m_target_Noid;
     private int m_warp = 0;
     private byte m_y = 0;
@@ -474,64 +453,304 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
     private int[] m_df_stepZ = new int[15];
     private boolean m_hole;
 
-
-    void setFont(Graphics graphics, Font font) 
+    public KingsField_P6Canvas() 
     {
-        graphics.setFont(font);
-        this.m_font_select = font;
+        this.DS_HCENTER = 1;
+        this.DS_VCENTER = 2;
+        this.DS_LEFT = 4;
+        this.DS_RIGHT = 8;
+        this.DS_TOP = 16;
+        this.DS_BOTTOM = 32;
+        this.ID_player = 0;
+        this.ID_enemy = 1;
+        this.GAME_OPEN = 0;
+        this.GAME_TITLE = 1;
+        this.MODE_GETS = 1;
+        this.title = 0;
+        this.menu = 1;
+        this.m_sh_grid_x = 0;
+        this.m_sh_grid_z = 1;
+        this.x_minus = 0;
+        this.x_plus = 1;
+        this.I_k0 = 0;
+        this.I_k1 = 1;
+        this.EN_bone_1s = 0;
+        this.EN_bone_2s = 1;
+        this.posX = 0;
+        this.posY = 1;
+        this.posZ = 2;
+        this.dire = 3;
+        this.kind = 4;
+        this.life = 5;
+        this.dist = 6;
+        this.behv = 7;
+        this.fram = 8;
+        this.grid = 9;
+        this.area = 10;
+        this.limit = 11;
+        this.lr = 13;
+        this.in = 0;
+        this.out = 1;
+        this.m_enemy_back = 150;
+        this.MANY_POLY_KIND = 4;
+        this.MANY_POLY_NUM = 200;
+        this.under = 0;
+        this.floor = 1;
+        this.above = 2;
+        this.m_span = 1000;
+        this.m_high = 1200;
+        this.m_s_grid = 0;
+        this.m_s_dire = 1;
+        this.none = 0;
+        this.through = 1;
+        this.POI = 0;
+        this.PAR = 1;
+        this.CMD_NIL = 0;
+        this.CMD_TITLE = 1;
+        this.CMD_MENU = 2;
+        this.CMD_ATTACK = 3;
+        this.CMD_BACK = 4;
+        this.unknown = 1;
+        this.m_switch_fps_paint = false;
+        this.m_switch_fps_frame = 20;
+        this.m_op_end = 580;
+
+        
+        // Initialzie our renderer class with the graphics object...   
+        KFM_Renderer.Initialize(getGraphics());
+        this.i_g3d = KFM_Renderer.GetGraphics3D();  // Temporary. Remove after refactoring. 
     }
 
-    void drawString(Graphics graphics, String string, int x, int y, int n3) 
-    {       
-        if ((n3 & 1) != 0) 
-        {
-            x -= this.m_font_select.stringWidth(string) / 2;
-        } 
-        else if ((n3 & 8) != 0) 
-        {
-            x -= this.m_font_select.stringWidth(string);
-        }
-
-        y += this.m_font_select.getHeight();
-        if ((n3 & 2) != 0) 
-        {
-            y -= this.m_font_select.getHeight() / 2;
-        } 
-        else if ((n3 & 0x20) != 0) 
-        {
-            y -= this.m_font_select.getHeight();
-        }
-
-        graphics.drawString(string, x, y);
-    }
-
-    void drawImage(Graphics graphics, Image image, int n, int n2, int n3) {
-        if ((n3 & 1) != 0) {
-            n -= image.getWidth() / 2;
-        } else if ((n3 & 8) != 0) {
-            n -= image.getWidth();
-        }
-        if ((n3 & 2) != 0) {
-            n2 -= image.getHeight() / 2;
-        } else if ((n3 & 0x20) != 0) {
-            n2 -= image.getHeight();
-        }
-        graphics.drawImage(image, n, n2);
-    }
-
-    void drawRoundRect(Graphics graphics, int x, int y, int w, int h) 
+    public synchronized void paint(Graphics graphics) 
     {
-        int[] nArray  = new int[]{x, x, x + 1, x + w - 1, x + w, x + w, x + w - 1, x + 1, x};
-        int[] nArray2 = new int[]{y + 1, y + h - 1, y + h, y + h, y + h - 1, y + 1, y, y, y + 1};
-        graphics.drawPolyline(nArray, nArray2, nArray.length);
+        if (!this.m_paint_flag)
+            return;
+
+        graphics = null;
+
+        KFM_Renderer.Lock();
+        KFM_Renderer.SetColour(m_ending_count > 100 ? KFM_Renderer.COLOUR_WHITE : KFM_Renderer.COLOUR_BLACK);
+        KFM_Renderer.DrawFilledRect(0, 0, getWidth(), getHeight());
+        KFM_Renderer.Flush();
+
+        //
+        // 3D
+        //
+
+        // Set up the 3D view...
+        KFM_Renderer.SetViewMatrix(this.m_trans);
+        KFM_Renderer.SetPrimitiveTextureArray(this.m_poly_tex);
+        KFM_Renderer.SetPrimitiveTextureIndex(0);
+
+        this.drawUnder();
+        this.drawFloor();
+        this.drawAbove();
+
+        this.drawStatue(KFM_Renderer.GetGraphics3D());
+        this.drawBox(KFM_Renderer.GetGraphics3D());
+        this.drawTaru(KFM_Renderer.GetGraphics3D());
+        this.drawItem(KFM_Renderer.GetGraphics3D());
+        this.drawEnemy(KFM_Renderer.GetGraphics3D());
+        this.drawWarp(KFM_Renderer.GetGraphics3D());
+
+        if (this.m_scene == 2 && this.m_at_frame > 0 && this.m_at_frame < this.m_at_limit) 
+            this.drawWeapon(KFM_Renderer.GetGraphics3D());
+
+        this.drawBackcover(KFM_Renderer.GetGraphics3D());
+        if (this.m_mode == 2)
+            this.drawShutter(KFM_Renderer.GetGraphics3D());
+        
+        KFM_Renderer.Flush();
+
+        //
+        // 2D
+        //
+        this.drawOver(KFM_Renderer.GetGraphics2D());
+
+        if (this.m_black > 0 && this.m_mode != 0) 
+        {
+            if (this.m_scene != 1 && this.m_scene != 7) 
+                this.drawParameter(KFM_Renderer.GetGraphics2D());
+
+            KFM_Renderer.SetOrigin(0, -16);
+            this.DrawUI(KFM_Renderer.GetGraphics2D());
+            this.drawCursor(KFM_Renderer.GetGraphics2D());
+            KFM_Renderer.SetOrigin(0, 0);
+        } 
+        else 
+        {
+            if (this.m_scene != 1 && this.m_scene != 7) 
+            {
+                this.drawParameter(KFM_Renderer.GetGraphics2D());
+            }
+            this.drawCursor(KFM_Renderer.GetGraphics2D());
+        }
+
+        KFM_Renderer.Flush();
+
+        //
+        // END
+        //
+        this.m_set_flag = true;
+        KFM_Renderer.Unlock();
     }
 
-    void fillRoundRect(Graphics graphics, int n, int n2, int n3, int n4, int n5, int n6) {
-        n5 = 2;
-        n6 = 2;
-        int[] nArray = new int[]{n, n, n + n5 / 2, n + n3 - n5 / 2, n + n3, n + n3, n + n3 - n5 / 2, n + n5 / 2, n};
-        int[] nArray2 = new int[]{n2 + n6 / 2, n2 + n4 - n6 / 2, n2 + n4, n2 + n4, n2 + n4 - n6 / 2, n2 + n6 / 2, n2, n2, n2 + n6 / 2};
-        graphics.fillPolygon(nArray, nArray2, nArray.length);
+    private void drawUnder() 
+    {
+        try 
+        {
+            if (this.m_poly_num[0] > 0) 
+            {
+                PrimitiveArray primitiveArray = new PrimitiveArray(4, 12800, this.m_poly_num[0]);
+
+                int[] nArray = primitiveArray.getVertexArray();
+                for (int n = 0; n < this.m_poly_num[0] * 12; ++n)
+                    nArray[n] = this.m_poly_ver[0][n];
+
+                int[] nArray2 = primitiveArray.getNormalArray();
+                for (int n = 0; n < this.m_poly_num[0] * 3; ++n)
+                    nArray2[n] = this.m_poly_nor[0][n];
+
+                int[] nArray3 = primitiveArray.getTextureCoordArray();
+                for (int n = 0; n < this.m_poly_num[0] * 8; ++n)
+                    nArray3[n] = this.m_uv[0][n];
+
+                KFM_Renderer.DrawPrimitiveArray(primitiveArray, 16);
+            }
+        }
+        catch (Exception exception) 
+        {
+            KingsField_P6Canvas.Print("drawFloor0 render: " + exception + "---error");
+        }
+    }
+
+    private void drawFloor() 
+    {
+        try 
+        {
+            if (this.m_poly_num[1] > 0) 
+            {
+                PrimitiveArray primitiveArray = new PrimitiveArray(4, 12800, this.m_poly_num[1]);
+                int[] nArray = primitiveArray.getVertexArray();
+
+                for (int n = 0; n < this.m_poly_num[1] * 12; ++n) 
+                    nArray[n] = this.m_poly_ver[1][n];
+
+                int[] nArray2 = primitiveArray.getNormalArray();
+                for (int n  = 0; n < this.m_poly_num[1] * 3; ++n) 
+                    nArray2[n] = this.m_poly_nor[1][n];
+
+                int[] nArray3 = primitiveArray.getTextureCoordArray();
+                for (int n = 0; n < this.m_poly_num[1] * 8; ++n)
+                    nArray3[n] = this.m_uv[1][n];
+
+                KFM_Renderer.DrawPrimitiveArray(primitiveArray, 16);
+            }
+        }
+        catch (Exception exception) 
+        {
+            KingsField_P6Canvas.Print("drawFloor1 render: " + exception + "---error");
+        }
+    }
+
+    private void drawAbove() {
+        try 
+        {
+            if (this.m_poly_num[2] > 0) 
+            {
+                PrimitiveArray primitiveArray = new PrimitiveArray(4, 12800, this.m_poly_num[2]);
+                int[] nArray = primitiveArray.getVertexArray();
+
+                for (int n = 0; n < this.m_poly_num[2] * 12; ++n)
+                    nArray[n] = this.m_poly_ver[2][n];
+
+                int[] nArray2 = primitiveArray.getNormalArray();
+                for (int n = 0; n < this.m_poly_num[2] * 3; ++n)
+                    nArray2[n] = this.m_poly_nor[2][n];
+
+                int[] nArray3 = primitiveArray.getTextureCoordArray();
+                for (int n = 0; n < this.m_poly_num[2] * 8; ++n)
+                    nArray3[n] = this.m_uv[2][n];
+
+                KFM_Renderer.DrawPrimitiveArray(primitiveArray, 16);
+            }
+        }
+        catch (Exception exception) 
+        {
+            KingsField_P6Canvas.Print("drawStage render: " + exception + "---error");
+        }
+    }
+
+    public synchronized void processEvent(int n, int n2) {
+        if (n == 0 && n2 == 21 && this.m_scene == 2) {
+            if (this.m_mode == 0 || this.m_mode == 5 || this.m_mode == 7 || this.m_mode == 9 || this.m_mode == 11 || this.m_mode == 13 || this.m_mode == 15 || this.m_mode == 16) {
+                this.m_mode = (byte)6;
+                this.m_cursor_place = 1;
+                this.m_cursor_now = 0;
+            } else if (this.m_mode == 6) {
+                this.m_mode = 0;
+            } else if (this.m_mode == 8 || this.m_mode == 14) {
+                this.m_mode = (byte)7;
+                this.m_cursor_place = (byte)2;
+                this.m_cursor_now = 0;
+            } else if (this.m_mode == 10) {
+                this.m_mode = (byte)9;
+                this.m_cursor_place = (byte)4;
+                this.m_cursor_now = 0;
+            }
+            if (this.m_mode == 0) {
+                SoftLablesSet(2, 3);
+            } else {
+                if (this.m_mode != 2 && (this.m_mode == 6 || this.m_mode == 9 || this.m_mode == 7)) {
+                    SoftLablesSet(4, 0);
+                }
+            }
+            this.m_set_flag = false;
+            this.m_paint_flag = true;
+        }
+        if (n == 0 && n2 == 22)
+        {
+            if (this.m_scene == 3 || this.m_scene == 7 && this.m_ending_count == 130) 
+            {
+                this.m_cursor_place = 0;
+                this.m_cursor_now = 0;
+                this.m_scene = 1;
+                this.checkTitle();
+                this.openingStart();
+                this.m_op_frame = 580;
+                SoftLabelsClear();
+                this.m_ending = false;
+                this.m_ending_count = 0;
+                this.m_cursor_now = 0;
+                this.m_comment_frame = 50;
+                this.m_add_comment = false;
+
+                player.ClearStatus(KFM_Player.COND_POISON);
+                player.ClearStatus(KFM_Player.COND_PARALYZE);
+                player.ClearStatus(KFM_Player.COND_DARK);
+                player.ClearStatus(KFM_Player.COND_CURSE);
+
+                this.m_option[0] = false;
+                this.m_option[1] = false;
+                this.m_option[2] = true;
+                this.m_option[3] = false;
+            } 
+            else if (this.m_scene == 2 && this.m_mode == 0 && player.currentWeaponID != 40 && this.m_at_frame == this.m_at_limit && player.status[KFM_Player.COND_CURSE] == -1) 
+            {
+                this.m_at_ok = true;
+                if (this.m_option[1]) 
+                    this.m_J_se.playMMF(4);
+
+                this.m_at_frame = 0;
+                this.m_gauge_attack = this.m_gauge_value;
+                this.m_gauge_value = 0;
+            }
+        }
+    }
+
+    public synchronized void mediaAction(MediaPresenter mediaPresenter, int n, int n2) 
+    {
+
     }
 
     static Image loadImage(int n) throws Exception {
@@ -609,8 +828,9 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
       System.out.println(string);
     }
 
-    void dispLogo() {
-        Image[] imageArray = new Image[]{KingsField_P6Canvas.loadImage("logo0.gif"), KingsField_P6Canvas.loadImage("logo1.gif")};
+    void dispLogo() 
+    {
+        Image[] imageArray = new Image[] { KingsField_P6Canvas.loadImage("logo0.gif"), KingsField_P6Canvas.loadImage("logo1.gif") };
         boolean bl = false;
         int n = 0;
         int n2 = 0;
@@ -619,12 +839,14 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
                 Graphics graphics = (Graphics)this.i_g3d;
                 int n3 = this.getWidth();
                 int n4 = this.getHeight();
-                graphics.lock();
-                graphics.setColor(this.WHITE);
+                KFM_Renderer.Lock();
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
                 graphics.fillRect(0, 0, n3, n4);
-                this.drawImage(graphics, imageArray[i], n3 / 2, n4 / 2, 3);
-                graphics.unlock(true);
-                for (int j = 0; j < 20; ++j) {
+                KFM_Renderer.DrawImage(imageArray[i], n3 / 2, n4 / 2, 3);
+                KFM_Renderer.Unlock();
+
+                for (int j = 0; j < 20; ++j) 
+                {
                     n2 = n;
                     n = KingsField_P6Main.canvas.getKeypadState();
                     
@@ -661,75 +883,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         imageArray[0] = null;
         imageArray = null;
         // system.gc();
-    }
-
-    public KingsField_P6Canvas() {
-        this.APP_VERSION = 1;
-        this.SP_VERSION_DATA = 0;
-        this.SP_GAME_DATA = 4;
-        this.SP_RESOURCE_DATA = 20480;
-        this.DS_HCENTER = 1;
-        this.DS_VCENTER = 2;
-        this.DS_LEFT = 4;
-        this.DS_RIGHT = 8;
-        this.DS_TOP = 16;
-        this.DS_BOTTOM = 32;
-        this.ID_player = 0;
-        this.ID_enemy = 1;
-        this.GAME_OPEN = 0;
-        this.GAME_TITLE = 1;
-        this.MODE_GETS = 1;
-        this.title = 0;
-        this.menu = 1;
-        this.m_sh_grid_x = 0;
-        this.m_sh_grid_z = 1;
-        this.x_minus = 0;
-        this.x_plus = 1;
-        this.I_k0 = 0;
-        this.I_k1 = 1;
-        this.EN_bone_1s = 0;
-        this.EN_bone_2s = 1;
-        this.posX = 0;
-        this.posY = 1;
-        this.posZ = 2;
-        this.dire = 3;
-        this.kind = 4;
-        this.life = 5;
-        this.dist = 6;
-        this.behv = 7;
-        this.fram = 8;
-        this.grid = 9;
-        this.area = 10;
-        this.limit = 11;
-        this.lr = 13;
-        this.in = 0;
-        this.out = 1;
-        this.m_enemy_back = 150;
-        this.MANY_POLY_KIND = 4;
-        this.MANY_POLY_NUM = 200;
-        this.under = 0;
-        this.floor = 1;
-        this.above = 2;
-        this.m_span = 1000;
-        this.m_high = 1200;
-        this.m_s_grid = 0;
-        this.m_s_dire = 1;
-        this.none = 0;
-        this.through = 1;
-        this.POI = 0;
-        this.PAR = 1;
-        this.m_view_stepA = 50;
-        this.m_view_rotA = 20;
-        this.CMD_NIL = 0;
-        this.CMD_TITLE = 1;
-        this.CMD_MENU = 2;
-        this.CMD_ATTACK = 3;
-        this.CMD_BACK = 4;
-        this.unknown = 1;
-        this.m_switch_fps_paint = false;
-        this.m_switch_fps_frame = 20;
-        this.m_op_end = 580;
-        this.i_g3d = (Graphics3D)((Object)this.getGraphics());
     }
 
     private void initialize() 
@@ -820,7 +973,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         player.posY = 800;
         player.posZ = 500;
 
-        this.m_view_area = 6;
+        player.viewDistance = 6;
         this.m_step_No = 0;
         this.m_room_No = 1;
         player.floor = 0;
@@ -842,11 +995,12 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
 
         this.m_at_frame = this.m_at_limit = 10;
         this.m_cursor_place = 0;
-        this.m_view_step = 50;
-        this.m_view_rot = 20;
+        player.moveSpeed = 50;
+        player.turnSpeed = 20;
     }
 
-    public void run() {
+    public void run() 
+    {
         this.initialize();
         while (this.m_roop) {
             this.m_J_Dev.KeyRead();
@@ -899,10 +1053,13 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
             } else if (this.m_scene == 2) {
                 if (this.m_mode == 0) {
                     int n;
-                    if (this.m_block_level[this.m_player_grid] >= -200) {
+                    if (this.m_block_level[this.m_player_grid] >= -200) 
                         this.keyAct_stage();
-                    }
                     this.everyReload();
+
+                    // Tick Player Status
+                    player.TickStatus();
+
                     for (n = 0; n < this.m_enemy_num; ++n) {
                         this.enemyArea(n);
                         this.enemyEye(n);
@@ -960,7 +1117,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
             }
 
             this.FPS_update();
-  
+
             //Print("Memory: [Free = " + m_J_Dev.GetFreeMemory() + ", Total = " + m_J_Dev.GetTotalMemory() + "]");
             m_J_Dev.MemoryGC();
         }
@@ -968,7 +1125,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         IApplication.getCurrentApp().terminate();
     }
 
-    private void starning() {
+    private void starning() 
+    {
         this.m_starning = false;
         this.m_cover_num = 1;
         if (this.m_cursor_now == 0) {
@@ -1148,19 +1306,18 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void init_new() {
+    private void init_new() 
+    {
         int n;
         player.level = 1;
         player.experience = 0;
         player.currentHP = player.maxHP = 100;
         player.attackBase = (byte)8;
         player.defenseBase = (byte)10;
-
-        for (n = 0; n < 4; ++n) {
-            this.m_player_condi[n][0] = 0;
-            this.m_player_condi[n][1] = 0;
-        }
-
+        player.ClearStatus(KFM_Player.COND_POISON);
+        player.ClearStatus(KFM_Player.COND_PARALYZE);
+        player.ClearStatus(KFM_Player.COND_DARK);
+        player.ClearStatus(KFM_Player.COND_CURSE);
         player.ClearInventory();
 
         for (n = 0; n < 5; ++n) {
@@ -1202,7 +1359,9 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void init_load1(int n, int n2, int n3) {
+    private void init_load1(int n, int n2, int n3) 
+    {
+        // Read Player Info
         int n4;
         this.m_data = this.ReadRecord(n);
         player.floor = this.m_data[0];
@@ -1225,39 +1384,44 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.wepPltChange(player.currentWeaponID);
         this.rePalet();
         this.m_gauge_value = 0;
-        this.m_player_condi[0][0] = this.m_data[17];
-        this.m_player_condi[0][1] = this.m_data[18];
-        this.m_player_condi[1][0] = this.m_data[19];
-        this.m_player_condi[1][1] = this.m_data[20];
-        this.m_player_condi[2][0] = this.m_data[21];
-        this.m_player_condi[2][1] = this.m_data[22];
-        this.m_player_condi[3][0] = this.m_data[23];
-        this.m_player_condi[3][1] = this.m_data[24];
-        for (n4 = 0; n4 < 4; ++n4) {
-            if (this.m_player_condi[n4][0] != 0) continue;
-            this.m_condi_cure[n4] = true;
-        }
-        this.condiCure();
-        if (this.m_player_condi[2][0] == 1) {
-            this.m_view_area = 3;
-        }
-        if (this.m_player_condi[1][0] == 1) {
-            this.m_view_step = 25;
-            this.m_view_rot = 10;
-        }
+
+        // Load the current player status - m_data 17, 19, 21 and 23 are now unused.
+        if (m_data[18] > -1)
+            player.AddStatus(KFM_Player.COND_POISON);
+
+        if (m_data[20] > -1)
+            player.AddStatus(KFM_Player.COND_PARALYZE);
+
+        if (m_data[22] > -1)
+            player.AddStatus(KFM_Player.COND_DARK);
+
+        if (m_data[24] > -1)
+            player.AddStatus(KFM_Player.COND_CURSE);
+
+        player.status[KFM_Player.COND_POISON]   = m_data[18];
+        player.status[KFM_Player.COND_PARALYZE] = m_data[20];
+        player.status[KFM_Player.COND_DARK]     = m_data[22];
+        player.status[KFM_Player.COND_CURSE]    = m_data[24];
+
+        // Load the player inventory
         for (n4 = 0; n4 < 50; ++n4) {
             player.inventory[n4] = this.m_data[25 + n4];
             if (player.inventory[n4] >= 0) continue;
             player.inventory[n4] = 127;
         }
+
+        // Load game configuration
         for (n4 = 0; n4 < 4; ++n4) {
             this.m_option[n4] = this.m_data[75 + n4] == 0;
         }
+
+        // Load creature kills
         for (n4 = 0; n4 < 4; ++n4) {
             this.m_dead_count[n4] = this.m_data[79 + n4 * 2] * 100 + this.m_data[80 + n4 * 2];
         }
+
+        // Why?..
         this.m_data = null;
-        // system.gc();
         this.m_data = this.ReadRecord(n2);
         this.m_y = this.m_data[0];
         this.m_room_No = this.m_data[1];
@@ -1283,7 +1447,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         // system.gc();
     }
 
-    private void init_load2(int n) {
+    private void init_load2(int n) 
+    {
         this.m_data = this.ReadRecord(n);
         this.m_player_grid = this.m_data[0] * 100 + this.m_data[1];
         player.rotX = this.m_data[2] * 100 + this.m_data[3];
@@ -1297,7 +1462,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         player.posZ = this.m_player_grid / 30 * 1000 + 500;
     }
 
-    private void init_load3(int n) {
+    private void init_load3(int n) 
+    {
         this.m_data = this.ReadRecord(n);
         for (int i = 0; i < this.m_enemy_num; ++i) {
             this.m_enemy[i][9] = this.m_data[i * 7 + 0] * 100 + this.m_data[i * 7 + 1];
@@ -1355,7 +1521,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.posEnemy();
         this.posShutter();
         this.m_stair_right = false;
-        this.m_player_damaged = false;
+        player.damageFrame = false;
         playerDire();
         this.m_map_ID = this.m_stage_ID - this.m_memory_start[player.floor];
         this.viewWaterArea();
@@ -1364,7 +1530,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.m_item_id = -1;
     }
 
-    private void rePalet() {
+    private void rePalet() 
+    {
         for (int i = 0; i < this.m_plt_num; ++i) {
             if (this.m_plt_now[i] == this.m_plt_past[i]) continue;
             this.readResource((byte)i, this.m_plt_now[i]);
@@ -1376,7 +1543,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.resetTexuture();
     }
 
-    public void getStageData(byte by) {
+    public void getStageData(byte by) 
+    {
         if (this.m_J_rp.readImage("stage.raw", by)) {
             this.m_grid_x = (byte)this.m_J_rp.m_pix_w;
             this.m_grid_z = (byte)this.m_J_rp.m_pix_h;
@@ -1685,7 +1853,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void getMapInfo() {
+    private void getMapInfo() 
+    {
         this.m_map_ID = this.m_stage_ID - this.m_memory_start[player.floor];
         if (this.m_map_ID < 0) {
             this.m_memory = false;
@@ -1698,7 +1867,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void posEnemy() {
+    private void posEnemy() 
+    {
         this.m_enemy_trans = new AffineTrans[this.m_enemy_num];
         for (int i = 0; i < this.m_enemy_num; ++i) {
             this.m_enemy[i][3] = 1024 * ((this.m_rand.nextInt() >>> 1) % 4);
@@ -1717,13 +1887,15 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void posShutter() {
+    private void posShutter() 
+    {
         for (int i = 0; i < this.m_shutter_num; ++i) {
             this.m_shutter[i][1] = this.m_block_exist[this.m_shutter[i][0] - this.m_grid_x] != 2 && this.m_block_exist[this.m_shutter[i][0] + this.m_grid_x] != 2 ? 0 : 1;
         }
     }
 
-    private void updown() {
+    private void updown() 
+    {
         if (this.m_y == 0) {
             if (this.m_warp < 20) {
                 if (this.m_shift[this.m_shift_now][3] == 0) {
@@ -1779,7 +1951,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         ++this.m_warp;
     }
 
-    public void hitCharacter() {
+    public void hitCharacter() 
+    {
         for (int i = 0; i < this.m_enemy_num; ++i) {
             int n = this.m_enemy[i][4] % 5 == 4 ? 550 : 400;
             if (this.m_enemy[i][10] == 1 || this.m_enemy[i][5] <= 0 || this.m_enemy[i][6] >= n) continue;
@@ -1797,7 +1970,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    public void hitStage(int n, int n2) {
+    public void hitStage(int n, int n2) 
+    {
         int n3 = 0;
         int n4 = 0;
         if (n == 0) {
@@ -1978,7 +2152,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private boolean judgeP(int n) {
+    private boolean judgeP(int n) 
+    {
         int n2;
         boolean bl = false;
         if (this.m_block_exist[n] == 2 || this.m_block_exist[n] == 4) {
@@ -1998,7 +2173,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         return bl;
     }
 
-    private byte judgeE(int n, int n2) {
+    private byte judgeE(int n, int n2) 
+    {
         byte by = 0;
         if (this.m_block_exist[n] != 0) {
             by = 2;
@@ -2023,7 +2199,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         return by;
     }
 
-    public void keyAct_stage() {
+    public void keyAct_stage() 
+    {
         int n;
         int n2 = 0;
         int n3 = this.m_J_Dev.m_Trg;
@@ -2052,7 +2229,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
                         }
                         this.m_item_posZ = this.m_item_grid / this.m_grid_x * 1000 + 500;
                         this.itemSetting();
-                        this.m_comment_text = "FOUND " + KingsField_Text.ItemName[this.m_item_id] + "!";
+                        this.m_comment_text = "FOUND " + KFM_Text.ItemName[this.m_item_id] + "!";
                         this.m_mode = 1;
                         SoftLabelsClear();
                         this.m_item_treasure = true;
@@ -2068,7 +2245,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
                         int n7 = this.m_item_id;
                         player.inventory[n7] = (byte)(player.inventory[n7] + 1);
                     }
-                    this.m_comment_text = "FOUND " + KingsField_Text.ItemName[this.m_item_id] + "!";
+                    this.m_comment_text = "FOUND " + KFM_Text.ItemName[this.m_item_id] + "!";
                     this.m_comment_frame = 30;
                     this.m_item_id = -1;
                     this.m_item_posX = 0;
@@ -2088,7 +2265,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
                         this.m_item_posX = n8;
                         this.m_item_posY = this.m_item_id >= 40 ? 650 : 750;
                         this.m_item_posZ = n9;
-                        this.m_comment_text = "FOUND " + KingsField_Text.ItemName[this.m_item_id] + "!";
+                        this.m_comment_text = "FOUND " + KFM_Text.ItemName[this.m_item_id] + "!";
                         this.m_mode = 1;
                         SoftLabelsClear();
                         this.m_taru_on = true;
@@ -2141,7 +2318,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.m_J_Dev.getClass();
         if ((n10 & 0x10000) != 0) {
             ++this.m_rotL_add;
-            player.rotY = this.m_rotL_add < 15 ? (player.rotY += this.m_view_rot) : (this.m_rotL_add < 30 ? (player.rotY += this.m_view_rot + (this.m_rotL_add - 15)) : (player.rotY += this.m_view_rot + 15));
+            player.rotY = this.m_rotL_add < 15 ? (player.rotY += player.turnSpeed) : (this.m_rotL_add < 30 ? (player.rotY += player.turnSpeed + (this.m_rotL_add - 15)) : (player.rotY += player.turnSpeed + 15));
         } else {
             this.m_rotL_add = 0;
         }
@@ -2149,7 +2326,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.m_J_Dev.getClass();
         if ((n11 & 0x40000) != 0) {
             ++this.m_rotR_add;
-            player.rotY = this.m_rotR_add < 15 ? (player.rotY -= this.m_view_rot) : (this.m_rotR_add < 30 ? (player.rotY -= this.m_view_rot + (this.m_rotR_add - 15)) : (player.rotY -= this.m_view_rot + 15));
+            player.rotY = this.m_rotR_add < 15 ? (player.rotY -= player.turnSpeed) : (this.m_rotR_add < 30 ? (player.rotY -= player.turnSpeed + (this.m_rotR_add - 15)) : (player.rotY -= player.turnSpeed + 15));
         } else {
             this.m_rotR_add = 0;
         }
@@ -2166,28 +2343,28 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
                 }
             }
             if (this.m_step_auto == 1) {
-                player.posX += Math.sin(player.rotY) * this.m_view_step / 4096;
-                player.posZ += Math.cos(player.rotY) * this.m_view_step / 4096;
+                player.posX += Math.sin(player.rotY) * player.moveSpeed / 4096;
+                player.posZ += Math.cos(player.rotY) * player.moveSpeed / 4096;
                 n = 1;
             }
             if (this.m_step_auto == 2) {
-                player.posX -= Math.sin(player.rotY) * this.m_view_step / 4096;
-                player.posZ -= Math.cos(player.rotY) * this.m_view_step / 4096;
+                player.posX -= Math.sin(player.rotY) * player.moveSpeed / 4096;
+                player.posZ -= Math.cos(player.rotY) * player.moveSpeed / 4096;
                 n = 1;
             }
         } else {
             int n14 = this.m_J_Dev.m_Cont;
             this.m_J_Dev.getClass();
             if ((n14 & 0x20000) != 0) {
-                player.posX += Math.sin(player.rotY) * this.m_view_step / 4096;
-                player.posZ += Math.cos(player.rotY) * this.m_view_step / 4096;
+                player.posX += Math.sin(player.rotY) * player.moveSpeed / 4096;
+                player.posZ += Math.cos(player.rotY) * player.moveSpeed / 4096;
                 n = 1;
             } else {
                 int n15 = this.m_J_Dev.m_Cont;
                 this.m_J_Dev.getClass();
                 if ((n15 & 0x80000) != 0) {
-                    player.posX -= Math.sin(player.rotY) * this.m_view_step / 4096;
-                    player.posZ -= Math.cos(player.rotY) * this.m_view_step / 4096;
+                    player.posX -= Math.sin(player.rotY) * player.moveSpeed / 4096;
+                    player.posZ -= Math.cos(player.rotY) * player.moveSpeed / 4096;
                     n = 1;
                 }
             }
@@ -2195,27 +2372,27 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         int n16 = this.m_J_Dev.m_Cont;
         this.m_J_Dev.getClass();
         if ((n16 & 0x40) != 0) {
-            player.posX -= Math.sin(player.rotY + 1024) * this.m_view_step / 4096;
-            player.posZ -= Math.cos(player.rotY + 1024) * this.m_view_step / 4096;
+            player.posX -= Math.sin(player.rotY + 1024) * player.moveSpeed / 4096;
+            player.posZ -= Math.cos(player.rotY + 1024) * player.moveSpeed / 4096;
             n = 1;
         } else {
             int n17 = this.m_J_Dev.m_Cont;
             this.m_J_Dev.getClass();
             if ((n17 & 0x10) != 0) {
-                player.posX += Math.sin(player.rotY + 1024) * this.m_view_step / 4096;
-                player.posZ += Math.cos(player.rotY + 1024) * this.m_view_step / 4096;
+                player.posX += Math.sin(player.rotY + 1024) * player.moveSpeed / 4096;
+                player.posZ += Math.cos(player.rotY + 1024) * player.moveSpeed / 4096;
                 n = 1;
             }
         }
         int n18 = this.m_J_Dev.m_Cont;
         this.m_J_Dev.getClass();
         if ((n18 & 4) != 0) {
-            player.rotX += this.m_view_rot;
+            player.rotX += player.turnSpeed;
         } else {
             int n19 = this.m_J_Dev.m_Cont;
             this.m_J_Dev.getClass();
             if ((n19 & 0x100) != 0) {
-                player.rotX -= this.m_view_rot;
+                player.rotX -= player.turnSpeed;
             }
         }
         int n20 = this.m_J_Dev.m_Trg;
@@ -2226,7 +2403,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
         int n21 = this.m_J_Dev.m_Trg;
         this.m_J_Dev.getClass();
-        if ((n21 & 1) != 0 && player.currentWeaponID != 40 && this.m_at_frame == this.m_at_limit && this.m_player_condi[3][0] == 0) {
+        if ((n21 & 1) != 0 && player.currentWeaponID != 40 && this.m_at_frame == this.m_at_limit && player.status[KFM_Player.COND_CURSE] == -1) 
+        {
             this.m_at_ok = true;
             if (this.m_option[1]) {
                 this.m_J_se.playMMF(4);
@@ -2265,7 +2443,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private synchronized void keyAct_nostage() {
+    private synchronized void keyAct_nostage() 
+    {
         if (this.m_scene == 1) {
             this.keyTitle();
         } else if (this.m_scene == 6) {
@@ -2293,7 +2472,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void keyUPorDOWN(int n) {
+    private void keyUPorDOWN(int n) 
+    {
         int n2 = this.m_J_Dev.m_Trg;
         this.m_J_Dev.getClass();
         if ((n2 & 0x20000) != 0) {
@@ -2313,7 +2493,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void keyTitle() {
+    private void keyTitle() 
+    {
         int n = this.m_J_Dev.m_Trg;
         this.m_J_Dev.getClass();
         if ((n & 0x20000) != 0) {
@@ -2365,14 +2546,16 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void keyCancel() {
+    private void keyCancel()
+    {
         if (this.m_J_Dev.m_Trg != 0) {
             this.m_mode = 0;
             SoftLablesSet(2, 3);
         }
     }
 
-    private void keyGets() {
+    private void keyGets() 
+    {
         if (!this.m_item_treasure && this.m_J_Dev.m_Trg != 0) {
             if (player.inventory[this.m_item_id] < 127) {
                 int n = this.m_item_id;
@@ -2398,10 +2581,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    /*
-     * Enabled aggressive block sorting
-     */
-    private void keyMenu() {
+    private void keyMenu() 
+    {
         block16: {
             block15: {
                 int n = this.m_J_Dev.m_Trg;
@@ -2480,10 +2661,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    /*
-     * Enabled aggressive block sorting
-     */
-    private void keyItem() {
+    private void keyItem() 
+    {
         block6: {
             block5: {
                 if (this.m_array_num <= 0) return;
@@ -2513,9 +2692,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.m_mode = (byte)8;
     }
 
-    /*
-     * Enabled aggressive block sorting
-     */
     private void keyUse() {
         int n;
         block30: {
@@ -2536,37 +2712,61 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         switch (this.m_cursor_now) {
             case 0: {
                 if (this.m_array[this.m_item_select_i] >= 49) break;
-                if (this.m_array[this.m_item_select_i] == 40) {
+
+
+                if (this.m_array[this.m_item_select_i] == 40)  // USE HERB
+                {
                     player.currentHP += 50;
-                } else if (this.m_array[this.m_item_select_i] == 41) {
-                    this.m_condi_cure[0] = true;
-                } else if (this.m_array[this.m_item_select_i] == 42) {
+                } 
+                else 
+                if (this.m_array[this.m_item_select_i] == 41)  // USE ANTIDOTE
+                {
+                    player.ClearStatus(KFM_Player.COND_POISON);
+                } 
+                else 
+                if (this.m_array[this.m_item_select_i] == 42)  // USE ???
+                {
+                    player.ClearStatus(KFM_Player.COND_POISON);
+                    player.ClearStatus(KFM_Player.COND_PARALYZE);
                     player.currentHP += 100;
-                    this.m_condi_cure[0] = true;
-                    this.m_condi_cure[1] = true;
-                } else if (this.m_array[this.m_item_select_i] == 43) {
+                } 
+                else 
+                if (this.m_array[this.m_item_select_i] == 43)  // USE ???
+                {
+                    player.ClearStatus(KFM_Player.COND_POISON);
+                    player.ClearStatus(KFM_Player.COND_PARALYZE);
+                    player.ClearStatus(KFM_Player.COND_DARK);
+                    player.ClearStatus(KFM_Player.COND_CURSE);
                     player.currentHP += 150;
-                    for (n = 0; n < 4; ++n) {
-                        this.m_condi_cure[n] = true;
-                    }
-                } else if (this.m_array[this.m_item_select_i] == 44) {
+                } 
+                else 
+                if (this.m_array[this.m_item_select_i] == 44)  // USE ???
+                {
+                    player.ClearStatus(KFM_Player.COND_POISON);
+                    player.ClearStatus(KFM_Player.COND_PARALYZE);
+                    player.ClearStatus(KFM_Player.COND_DARK);
+                    player.ClearStatus(KFM_Player.COND_CURSE);
                     player.currentHP += 500;
-                    for (n = 0; n < 4; ++n) {
-                        this.m_condi_cure[n] = true;
-                    }
-                } else if (this.m_array[this.m_item_select_i] == 45) {
+                } 
+                else if (this.m_array[this.m_item_select_i] == 45) 
+                {
                     n = (byte)((this.m_rand.nextInt() >>> 1) % 2 + 1);
                     player.attackBase = (byte)(player.attackBase + n);
                     this.equipSet();
-                } else if (this.m_array[this.m_item_select_i] == 46) {
+                } 
+                else if (this.m_array[this.m_item_select_i] == 46) 
+                {
                     n = (byte)((this.m_rand.nextInt() >>> 1) % 2 + 1);
                     player.defenseBase = (byte)(player.defenseBase + n);
                     this.equipSet();
-                } else if (this.m_array[this.m_item_select_i] == 47) {
+                } 
+                else if (this.m_array[this.m_item_select_i] == 47) 
+                {
                     n = (byte)((this.m_rand.nextInt() >>> 1) % 3 + 3);
                     player.maxHP += n;
                     this.equipSet();
                 }
+
                 if (player.attackBase > 99) {
                     player.attackBase = (byte)99;
                 }
@@ -2576,7 +2776,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
                 if (player.maxHP > 999) {
                     player.maxHP = 999;
                 }
-                this.condiCure();
+                
                 if (player.currentHP > player.maxHP) {
                     player.currentHP = player.maxHP;
                 }
@@ -2600,9 +2800,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.m_mode = (byte)7;
     }
 
-    /*
-     * Enabled aggressive block sorting
-     */
     private void keyEquip() {
         int n;
         int n2;
@@ -2826,9 +3023,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    /*
-     * Enabled aggressive block sorting
-     */
     private void keyOpt() {
         block5: {
             block4: {
@@ -2854,9 +3048,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.m_option[this.m_cursor_now] = true;
     }
 
-    /*
-     * Enabled aggressive block sorting
-     */
     private void keysave() {
         block7: {
             block6: {
@@ -2911,7 +3102,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         int n7 = player.experience % 10000;
         int n8 = n7 / 100;
         int n9 = n7 % 100;
-        byte by = this.m_option[0] ? (byte)0 : 1;
+        byte by  = this.m_option[0] ? (byte)0 : 1;
         byte by2 = this.m_option[1] ? (byte)0 : 1;
         byte by3 = this.m_option[2] ? (byte)0 : 1;
         byte by4 = this.m_option[3] ? (byte)0 : 1;
@@ -2923,7 +3114,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         int n15 = this.m_dead_count[2] % 100;
         int n16 = this.m_dead_count[3] / 100;
         int n17 = this.m_dead_count[3] % 100;
-        this.m_data = new byte[]{player.floor, player.level, (byte)n6, (byte)n8, (byte)n9, (byte)n2, (byte)n3, (byte)n4, (byte)n5, player.attackBase, player.defenseBase, player.currentWeaponID, player.currentHelmID, player.currentPlateID, player.currentArmsID, player.currentLegsID, player.currentShieldID, this.m_player_condi[0][0], this.m_player_condi[0][1], this.m_player_condi[1][0], this.m_player_condi[1][1], this.m_player_condi[2][0], this.m_player_condi[2][1], this.m_player_condi[3][0], this.m_player_condi[3][1], player.inventory[0], player.inventory[1], player.inventory[2], player.inventory[3], player.inventory[4], player.inventory[5], player.inventory[6], player.inventory[7], player.inventory[8], player.inventory[9], player.inventory[10], player.inventory[11], player.inventory[12], player.inventory[13], player.inventory[14], player.inventory[15], player.inventory[16], player.inventory[17], player.inventory[18], player.inventory[19], player.inventory[20], player.inventory[21], player.inventory[22], player.inventory[23], player.inventory[24], player.inventory[25], player.inventory[26], player.inventory[27], player.inventory[28], player.inventory[29], player.inventory[30], player.inventory[31], player.inventory[32], player.inventory[33], player.inventory[34], player.inventory[35], player.inventory[36], player.inventory[37], player.inventory[38], player.inventory[39], player.inventory[40], player.inventory[41], player.inventory[42], player.inventory[43], player.inventory[44], player.inventory[45], player.inventory[46], player.inventory[47], player.inventory[48], player.inventory[49], by, by2, by3, by4, (byte)n10, (byte)n11, (byte)n12, (byte)n13, (byte)n14, (byte)n15, (byte)n16, (byte)n17};
+        this.m_data = new byte[]{player.floor, player.level, (byte)n6, (byte)n8, (byte)n9, (byte)n2, (byte)n3, (byte)n4, (byte)n5, player.attackBase, player.defenseBase, player.currentWeaponID, player.currentHelmID, player.currentPlateID, player.currentArmsID, player.currentLegsID, player.currentShieldID, 0, player.status[0], 0, player.status[1], 0, player.status[2], 0, player.status[3], player.inventory[0], player.inventory[1], player.inventory[2], player.inventory[3], player.inventory[4], player.inventory[5], player.inventory[6], player.inventory[7], player.inventory[8], player.inventory[9], player.inventory[10], player.inventory[11], player.inventory[12], player.inventory[13], player.inventory[14], player.inventory[15], player.inventory[16], player.inventory[17], player.inventory[18], player.inventory[19], player.inventory[20], player.inventory[21], player.inventory[22], player.inventory[23], player.inventory[24], player.inventory[25], player.inventory[26], player.inventory[27], player.inventory[28], player.inventory[29], player.inventory[30], player.inventory[31], player.inventory[32], player.inventory[33], player.inventory[34], player.inventory[35], player.inventory[36], player.inventory[37], player.inventory[38], player.inventory[39], player.inventory[40], player.inventory[41], player.inventory[42], player.inventory[43], player.inventory[44], player.inventory[45], player.inventory[46], player.inventory[47], player.inventory[48], player.inventory[49], by, by2, by3, by4, (byte)n10, (byte)n11, (byte)n12, (byte)n13, (byte)n14, (byte)n15, (byte)n16, (byte)n17};
         this.WriteRecord(n, null);
         // system.gc();
         this.WriteRecord(n, this.m_data);
@@ -2983,9 +3174,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.WriteRecord(n, this.m_data);
     }
 
-    /*
-     * Enabled aggressive block sorting
-     */
     private void keyqsave() {
         block5: {
             block4: {
@@ -3039,8 +3227,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
         playerDire();
         playerData();
-        this.condiEffect();
-        this.condiCure();
         this.posThroughBack();
     }
 
@@ -3070,7 +3256,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
             this.viewWaterArea();
             this.mapWaterArea();
             if (this.m_player_grid != this.m_past_grid && this.m_block_level[this.m_player_grid] == -200) {
-                this.m_player_damaged = true;
+                player.damageFrame = true;
                 player.currentHP -= 15;
             }
         }
@@ -3087,7 +3273,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
                     player.posY += Math.sin(this.m_theta) * this.m_shinpuku / 4096;
                 }
             } else {
-                player.rotX -= this.m_view_rot;
+                player.rotX -= player.turnSpeed;
                 if (player.rotX < -512) {
                     player.rotX = -512;
                 }
@@ -3138,7 +3324,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
 
         // Handle Player Level Up...
-        if (player.level > 0 && player.experience >= KingsField_Player.ExperienceGraph[player.level]) 
+        if (player.level > 0 && player.experience >= KFM_Player.ExperienceGraph[player.level]) 
         {
             player.level = (byte)(player.level + 1);
             player.attackBase = (byte)(player.attackBase + 1);
@@ -3173,79 +3359,10 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
                 this.m_J_se.playMMF(2);
             }
             player.currentHP = 0;
-            this.m_player_damaged = false;
+            player.damageFrame = false;
             this.m_wave = 0;
             this.m_scene = (byte)3;
             SoftLablesSet(0, 1);
-        }
-    }
-
-    private void condiEffect() {
-        this.m_condi_count = (byte)(this.m_condi_count + 1);
-        if (this.m_condi_count == 100) {
-            this.m_condi_count = 0;
-            if (this.m_player_condi[0][0] == 1) {
-                byte[] byArray = this.m_player_condi[0];
-                byArray[1] = (byte)(byArray[1] + 1);
-                player.currentHP -= player.maxHP * 5 / 100;
-                this.m_player_damaged = true;
-                if (this.m_player_condi[0][1] >= 5) {
-                    this.m_condi_cure[0] = true;
-                }
-            }
-            if (this.m_player_condi[2][0] == 1) {
-                byte[] byArray = this.m_player_condi[2];
-                byArray[1] = (byte)(byArray[1] + 1);
-                this.m_view_area = 3;
-                if (this.m_player_condi[2][1] >= 5) {
-                    this.m_condi_cure[2] = true;
-                }
-            }
-            if (this.m_player_condi[1][0] == 1) {
-                byte[] byArray = this.m_player_condi[1];
-                byArray[1] = (byte)(byArray[1] + 1);
-                this.m_view_step = 25;
-                this.m_view_rot = 10;
-                if (this.m_player_condi[1][1] >= 5) {
-                    this.m_condi_cure[1] = true;
-                }
-            }
-            if (this.m_player_condi[3][0] == 1) {
-                byte[] byArray = this.m_player_condi[3];
-                byArray[1] = (byte)(byArray[1] + 1);
-                this.m_at_frame = this.m_at_limit;
-                if (this.m_player_condi[3][1] >= 5) {
-                    this.m_condi_cure[3] = true;
-                }
-            }
-        }
-    }
-
-    private void condiCure() 
-    {
-        if (this.m_condi_cure[0]) {
-            this.m_player_condi[0][0] = 0;
-            this.m_player_condi[0][1] = 0;
-            this.m_condi_cure[0] = false;
-        }
-        if (this.m_condi_cure[2]) {
-            this.m_player_condi[2][0] = 0;
-            this.m_player_condi[2][1] = 0;
-            this.m_condi_cure[2] = false;
-            this.m_view_area = 6;
-            this.viewWaterArea();
-        }
-        if (this.m_condi_cure[1]) {
-            this.m_player_condi[1][0] = 0;
-            this.m_player_condi[1][1] = 0;
-            this.m_condi_cure[1] = false;
-            this.m_view_step = 50;
-            this.m_view_rot = 20;
-        }
-        if (this.m_condi_cure[3]) {
-            this.m_player_condi[3][0] = 0;
-            this.m_player_condi[3][1] = 0;
-            this.m_condi_cure[3] = false;
         }
     }
 
@@ -3268,7 +3385,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private synchronized void viewWaterArea() {
+    private synchronized void viewWaterArea() 
+    {
         int n;
         for (int i = 0; i < this.m_grid_all; ++i) {
             this.m_player_area[i] = false;
@@ -3284,7 +3402,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         for (n = 0; n < 4; ++n) {
             this.m_poly_num[n] = 0;
         }
-        for (n = 0; n < this.m_view_area * 2 + 1; ++n) {
+        for (n = 0; n < player.viewDistance * 2 + 1; ++n) {
             for (int i = 0; i < this.m_grid_start_num[n]; ++i) {
                 int n3;
                 n2 = this.m_grid_start[n][i];
@@ -3355,7 +3473,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
                         this.makePolygonX(n, n2, 0, 1200);
                     }
                 }
-                if (n4 < this.m_view_area) {
+                if (n4 < player.viewDistance) {
                     this.m_grid_start[n3 + 1][this.m_grid_start_num[n3 + 1]] = n5;
                     int n6 = n3 + 1;
                     this.m_grid_start_num[n6] = this.m_grid_start_num[n6] + 1;
@@ -3398,7 +3516,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
                         this.makePolygonZ(n, n2, 0, 1200);
                     }
                 }
-                if (n4 < this.m_view_area) {
+                if (n4 < player.viewDistance) {
                     this.m_grid_start[n3 + 1][this.m_grid_start_num[n3 + 1]] = n5;
                     int n6 = n3 + 1;
                     this.m_grid_start_num[n6] = this.m_grid_start_num[n6] + 1;
@@ -3429,10 +3547,10 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
             n6 = 7;
         } else if (n2 == 0) {
             n7 = 1;
-            n6 = n == this.m_start_grid || n == this.m_goal_grid ? 6 : (this.m_player_condi[2][0] == 1 ? n8 : n8 - 3);
+            n6 = n == this.m_start_grid || n == this.m_goal_grid ? 6 : (player.status[KFM_Player.COND_DARK] >= 0 ? n8 : n8 - 3);
         } else {
             n7 = 2;
-            n6 = this.m_player_condi[2][0] == 1 ? n8 : n8 - 3;
+            n6 = player.status[KFM_Player.COND_DARK] >= 0 ? n8 : n8 - 3;
         }
         if (n6 < 0) {
             n6 = 0;
@@ -3488,7 +3606,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         if (this.m_shutter_draw) {
             n13 = 3;
         }
-        if ((n9 = this.m_player_condi[2][0] == 1 ? n10 + 1 : n10 - 2) < 1) {
+        if ((n9 = player.status[KFM_Player.COND_DARK] >= 0 ? n10 + 1 : n10 - 2) < 1) {
             n9 = 1;
         }
         if (n10 <= 1) {
@@ -3541,7 +3659,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         if (this.m_shutter_draw) {
             n13 = 3;
         }
-        if ((n9 = this.m_player_condi[2][0] == 1 ? n10 + 2 : n10 - 1) < 2) {
+        if ((n9 = player.status[KFM_Player.COND_DARK] >= 0 ? n10 + 2 : n10 - 1) < 2) {
             n9 = 2;
         }
         if (n10 <= 1) {
@@ -3586,13 +3704,13 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
             this.m_map_area[i] = false;
         }
         int[] nArray = new int[]{1, 0, 0, 0, 0, 0};
-        int[][] nArray2 = new int[this.m_view_area][20];
+        int[][] nArray2 = new int[player.viewDistance][20];
         nArray2[0] = new int[]{this.m_player_grid, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         this.m_map_area[this.m_player_grid] = true;
         this.mapCheck(this.m_player_grid);
         int n = 0;
         int n2 = 0;
-        for (int i = 0; i < this.m_view_area; ++i) {
+        for (int i = 0; i < player.viewDistance; ++i) {
             for (int j = 0; j < nArray[i]; ++j) {
                 n = nArray2[i][j];
                 if (j == 0) {
@@ -3612,7 +3730,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
                         this.mapCheck(n3 + 1);
                         continue;
                     }
-                    if (this.m_map_area[n3] || i >= this.m_view_area - 1) continue;
+                    if (this.m_map_area[n3] || i >= player.viewDistance - 1) continue;
                     nArray2[i + 1][nArray[i + 1]] = n3;
                     this.m_map_area[n3] = true;
                     ++n2;
@@ -4167,7 +4285,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private synchronized void shutterSetting() {
+    private synchronized void shutterSetting() 
+    {
         if (this.m_mode == 2) {
             ++this.m_shutter_frame;
         }
@@ -4365,42 +4484,58 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void warpSetting() {
+    private void warpSetting() 
+    {
         int n = 0;
         int n2 = 0;
-        if (this.m_mode == 3) {
+        if (this.m_mode == 3) 
+        {
             ++this.m_cure_count;
+
             this.m_warp_rotY -= 128;
-            if (this.m_cure_count <= 25) {
+
+            if (this.m_cure_count <= 25) 
+            {
                 player.currentHP += player.maxHP / 25;
-                if (player.currentHP > player.maxHP) {
+                if (player.currentHP > player.maxHP) 
+                {
                     player.currentHP = player.maxHP;
                 }
-                if (this.m_cure_count == 1) {
-                    for (int i = 0; i < 4; ++i) {
-                        this.m_condi_cure[i] = true;
-                    }
-                    this.condiCure();
+
+                if (this.m_cure_count == 1) 
+                {
+                    player.ClearStatus(KFM_Player.COND_POISON);
+                    player.ClearStatus(KFM_Player.COND_PARALYZE);
+                    player.ClearStatus(KFM_Player.COND_DARK);
+                    player.ClearStatus(KFM_Player.COND_CURSE);
                 }
+
                 if (this.m_cure_count < 15) {
                     n2 = 8192 * this.m_cure_count / 15;
                     this.m_warp_posY = 300;
-                } else {
+                } 
+                else 
+                {
                     n2 = 8192;
                     this.m_warp_posY = 300;
                 }
-            } else {
+            } 
+            else 
+            {
                 this.m_plt_now[9] = 0;
                 this.rePalet();
                 this.m_mode = (byte)4;
                 this.m_black = 1;
                 this.viewWaterArea();
-                if (player.currentHP < player.maxHP) {
+                if (player.currentHP < player.maxHP) 
+                {
                     player.currentHP = player.maxHP;
                 }
             }
             n = 2048;
-        } else if (this.m_scene == 5 && this.m_mode == 0) {
+        } 
+        else if (this.m_scene == 5 && this.m_mode == 0) 
+        {
             this.m_warp_rotY -= 64;
             this.m_warp_high += 512;
             if (this.m_warp < 80) {
@@ -4436,148 +4571,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.m_warp_trans.m13 = this.m_warp_posY;
         this.m_warp_trans.m23 = this.m_warp_posZ;
         this.m_warp_trans.mul(this.m_3D_b_trans, this.m_warp_trans);
-    }
-
-    public synchronized void paint(Graphics graphics) {
-        graphics = (Graphics)((Object)this.i_g3d);
-
-        if (this.m_paint_flag)
-        {
-            graphics.lock();
-            graphics.setColor(this.BLACK);
-            if (this.m_ending_count > 100) {
-                graphics.setColor(this.WHITE);
-            }
-            graphics.fillRect(0, 0, this.getWidth(), this.getHeight());
-            Graphics3D graphics3D = (Graphics3D)((Object)graphics);
-            this.drawUnder(graphics3D);
-            graphics3D.flush();
-            Graphics3D graphics3D2 = (Graphics3D)((Object)graphics);
-            this.drawFloor(graphics3D2);
-            graphics3D2.flush();
-            Graphics3D graphics3D3 = (Graphics3D)((Object)graphics);
-            this.drawAbove(graphics3D3);
-            this.drawStatue(graphics3D3);
-            this.drawBox(graphics3D3);
-            this.drawTaru(graphics3D3);
-            this.drawItem(graphics3D3);
-            this.drawEnemy(graphics3D3);
-            this.drawWarp(graphics3D3);
-            graphics3D3.flush();
-            Graphics3D graphics3D4 = (Graphics3D)((Object)graphics);
-            if (this.m_scene == 2 && this.m_at_frame > 0 && this.m_at_frame < this.m_at_limit) {
-                this.drawWeapon(graphics3D4);
-            }
-            graphics3D4.flush();
-            Graphics3D graphics3D5 = (Graphics3D)((Object)graphics);
-            this.drawBackcover(graphics3D5);
-            if (this.m_mode == 2) {
-                this.drawShutter(graphics3D5);
-            }
-            graphics3D5.flush();
-            this.drawOver(graphics);
-            if (this.m_black > 0 && this.m_mode != 0) {
-                if (this.m_scene != 1 && this.m_scene != 7) {
-                    this.drawParameter(graphics);
-                }
-                graphics.setOrigin(0, -16);
-                this.DrawUI(graphics);
-                this.drawCursor(graphics);
-                graphics.setOrigin(0, 0);
-            } else {
-                if (this.m_scene != 1 && this.m_scene != 7) {
-                    this.drawParameter(graphics);
-                }
-                this.drawCursor(graphics);
-            }
-            this.m_set_flag = true;
-            this.m_paint_flag = false;
-            graphics.unlock(true);
-        }
-    }
-
-    private void drawUnder(Graphics3D graphics3D) {
-        try {
-            if (this.m_poly_num[0] > 0) {
-                int n;
-                PrimitiveArray primitiveArray = new PrimitiveArray(4, 12800, this.m_poly_num[0]);
-                int[] nArray = primitiveArray.getVertexArray();
-                for (n = 0; n < this.m_poly_num[0] * 12; ++n) {
-                    nArray[n] = this.m_poly_ver[0][n];
-                }
-                int[] nArray2 = primitiveArray.getNormalArray();
-                for (n = 0; n < this.m_poly_num[0] * 3; ++n) {
-                    nArray2[n] = this.m_poly_nor[0][n];
-                }
-                int[] nArray3 = primitiveArray.getTextureCoordArray();
-                for (n = 0; n < this.m_poly_num[0] * 8; ++n) {
-                    nArray3[n] = this.m_uv[0][n];
-                }
-                this.i_g3d.setViewTrans(this.m_trans);
-                this.i_g3d.setPrimitiveTextureArray(this.m_poly_tex);
-                this.i_g3d.setPrimitiveTexture(0);
-                this.i_g3d.renderPrimitives(primitiveArray, 16);
-            }
-        }
-        catch (Exception exception) {
-            KingsField_P6Canvas.Print("drawFloor0 render: " + exception + "---error");
-        }
-    }
-
-    private void drawFloor(Graphics3D graphics3D) {
-        try {
-            if (this.m_poly_num[1] > 0) {
-                int n;
-                PrimitiveArray primitiveArray = new PrimitiveArray(4, 12800, this.m_poly_num[1]);
-                int[] nArray = primitiveArray.getVertexArray();
-                for (n = 0; n < this.m_poly_num[1] * 12; ++n) {
-                    nArray[n] = this.m_poly_ver[1][n];
-                }
-                int[] nArray2 = primitiveArray.getNormalArray();
-                for (n = 0; n < this.m_poly_num[1] * 3; ++n) {
-                    nArray2[n] = this.m_poly_nor[1][n];
-                }
-                int[] nArray3 = primitiveArray.getTextureCoordArray();
-                for (n = 0; n < this.m_poly_num[1] * 8; ++n) {
-                    nArray3[n] = this.m_uv[1][n];
-                }
-                this.i_g3d.setViewTrans(this.m_trans);
-                this.i_g3d.setPrimitiveTextureArray(this.m_poly_tex);
-                this.i_g3d.setPrimitiveTexture(0);
-                this.i_g3d.renderPrimitives(primitiveArray, 16);
-            }
-        }
-        catch (Exception exception) {
-            KingsField_P6Canvas.Print("drawFloor1 render: " + exception + "---error");
-        }
-    }
-
-    private void drawAbove(Graphics3D graphics3D) {
-        try {
-            if (this.m_poly_num[2] > 0) {
-                int n;
-                PrimitiveArray primitiveArray = new PrimitiveArray(4, 12800, this.m_poly_num[2]);
-                int[] nArray = primitiveArray.getVertexArray();
-                for (n = 0; n < this.m_poly_num[2] * 12; ++n) {
-                    nArray[n] = this.m_poly_ver[2][n];
-                }
-                int[] nArray2 = primitiveArray.getNormalArray();
-                for (n = 0; n < this.m_poly_num[2] * 3; ++n) {
-                    nArray2[n] = this.m_poly_nor[2][n];
-                }
-                int[] nArray3 = primitiveArray.getTextureCoordArray();
-                for (n = 0; n < this.m_poly_num[2] * 8; ++n) {
-                    nArray3[n] = this.m_uv[2][n];
-                }
-                this.i_g3d.setViewTrans(this.m_trans);
-                this.i_g3d.setPrimitiveTextureArray(this.m_poly_tex);
-                this.i_g3d.setPrimitiveTexture(0);
-                this.i_g3d.renderPrimitives(primitiveArray, 16);
-            }
-        }
-        catch (Exception exception) {
-            KingsField_P6Canvas.Print("drawStage render: " + exception + "---error");
-        }
     }
 
     private void drawShutter(Graphics3D graphics3D) {
@@ -4796,21 +4789,24 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    public void drawParameter(Graphics graphics) {
-        int n;
-        this.setFont(graphics, this.m_font_small);
-        graphics.setColor(this.WHITE);
-        this.drawImage(graphics, this.m_img_hp, 5, 7, 0);
-        this.drawImage(graphics, this.m_img_power, 5, 23, 0);
+    public void drawParameter(Graphics graphics) 
+    {
+        KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+        KFM_Renderer.DrawImage(this.m_img_hp, 5, 7, 0);
+        KFM_Renderer.DrawImage(this.m_img_power, 5, 23, 0);
+
         int n2 = player.currentHP * 40 / player.maxHP;
+
         graphics.setColor(this.BLACK);
         graphics.fillRect(42, 10, 40, 5);
         graphics.fillRect(42, 26, 40, 2);
         graphics.setColor(this.RED_DEEP);
+
         if (n2 > 0) {
             graphics.fillRect(42, 10, n2, 1);
             graphics.fillRect(42, 14, n2, 1);
         }
+
         graphics.setColor(this.RED_LIGHT);
         if (n2 > 0) {
             graphics.fillRect(42, 11, n2, 3);
@@ -4818,15 +4814,21 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         graphics.fillRect(42, 26, this.m_gauge_value, 2);
         int n3 = 0;
         int[][] nArrayArray = new int[][]{{120, 3}, {170, 3}, {120, 20}, {170, 20}};
-        for (n = 0; n < 4; ++n) {
-            if (this.m_player_condi[n][0] != 1) continue;
-            this.drawImage(graphics, this.m_img_condi[n], nArrayArray[n3][0], nArrayArray[n3][1], 1);
+
+        for (int n = 0; n < 4; ++n) 
+        {
+            if (player.status[n] == -1)
+                continue;
+
+            KFM_Renderer.DrawImage(this.m_img_condi[n], nArrayArray[n3][0], nArrayArray[n3][1], 1);
             ++n3;
         }
-        this.drawImage(graphics, this.m_img_houi, 203, 3, 0);
+
+        KFM_Renderer.DrawImage(this.m_img_houi, 203, 3, 0);
         graphics.setColor(this.RED);
         graphics.drawLine(220 + Math.sin(player.rotY) * 8 / 4096, 18 + Math.cos(player.rotY) * 8 / 4096, 220 - Math.sin(player.rotY) * 8 / 4096, 18 - Math.cos(player.rotY) * 8 / 4096);
-        for (n = 1; n <= 16; ++n) {
+        for (int n = 1; n <= 16; ++n) 
+        {
             graphics.drawLine(220 + Math.sin(player.rotY) * (-8 + n) / 4096, 18 + Math.cos(player.rotY) * (-8 + n) / 4096, 220 - Math.sin(player.rotY + 16 * n) * 8 / 4096, 18 - Math.cos(player.rotY + 16 * n) * 8 / 4096);
             graphics.drawLine(220 + Math.sin(player.rotY) * (-8 + n) / 4096, 18 + Math.cos(player.rotY) * (-8 + n) / 4096, 220 - Math.sin(player.rotY - 16 * n) * 8 / 4096, 18 - Math.cos(player.rotY - 16 * n) * 8 / 4096);
         }
@@ -4849,16 +4851,226 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
                     return;
 
                 // Get the current hint
-                KingsField_Hint stageHint = KingsField_Text.StatueHint[this.m_stage_ID - 1];
+                KFM_Hint stageHint = KFM_Text.StatueHint[this.m_stage_ID - 1];
 
                 // Configure graphics for the scene...
-                m_font_select = m_font_small;
-                graphics.setFont(m_font_select);
-                graphics.setColor(stageHint.Colour);
+                KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+                KFM_Renderer.SetColour(stageHint.Colour);
                 
                 // Now draw each line of the hint...
                 for (int i = 0; i < stageHint.Lines.length; ++i)
-                    drawString(graphics, stageHint.Lines[i], 30, 85 + 15 * i, 0);             
+                    KFM_Renderer.DrawString(stageHint.Lines[i], 30, 85 + (15 * i), 0);        
+            break;
+
+            // Initial Menu
+            case 6:
+                KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+
+                // Draw Button Frames
+                for (int i = 0; i < 8; ++i)
+                    KFM_Renderer.DrawRoundRect(20, 48 + 20 * i, 80, 16);
+
+                // Draw Button Text
+                KFM_Renderer.DrawString("USE ITEM", 22, 50, 0);
+                KFM_Renderer.DrawString("EQUIPMENT", 22, 70, 0);
+                KFM_Renderer.DrawString("OPEN MAP", 22, 90, 0);
+                KFM_Renderer.DrawString("OPTIONS", 22, 110, 0);
+                KFM_Renderer.DrawString("CONTROLS", 22, 130, 0);
+                KFM_Renderer.DrawString("LOAD", 22, 150, 0);
+                KFM_Renderer.DrawString("SUSPEND", 22, 170, 0);
+                KFM_Renderer.DrawString("EXIT", 22, 190, 0);
+
+                // Load button needs some specific logic
+                if (this.m_save_data != 2)
+                {
+                    KFM_Renderer.SetColour(KFM_Renderer.COLOUR_LTGREY);
+                    KFM_Renderer.DrawRoundRect(20, 148, 80, 16);
+                    KFM_Renderer.DrawString("LOAD", 22, 150, 0);
+                }
+
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                KFM_Renderer.DrawRoundRect(110, 45, 120, 205);
+
+                KFM_Renderer.DrawString("EXP.", 115, 50, 0);
+                KFM_Renderer.DrawString("" + player.experience, 225, 50, KFM_Renderer.TEXT_HALIGN_LEFT);
+                KFM_Renderer.DrawString("LEVEL", 115, 70, 0);
+                KFM_Renderer.DrawString("" + player.level, 225, 70, KFM_Renderer.TEXT_HALIGN_LEFT);
+                KFM_Renderer.DrawString("FLOOR", 115, 90, 0);
+                KFM_Renderer.DrawString("" + this.m_step_No, 225, 90, KFM_Renderer.TEXT_HALIGN_LEFT);
+                KFM_Renderer.DrawString("HP", 115, 110, 0);
+                KFM_Renderer.DrawString(player.currentHP + "/" + player.maxHP, 225, 110, KFM_Renderer.TEXT_HALIGN_LEFT);
+                KFM_Renderer.DrawString("STATUS", 115, 130, 0);
+
+                // What's our status?..
+                String statusString1 = "";
+                String statusString2 = "";
+                boolean hasAnyStatus = false;
+
+                // This could be _seriously_ optimized.
+                for (int i = 0; i < 4; ++i)
+                {
+                    if (player.status[i] == -1)
+                        continue;
+
+                    switch (i)
+                    {
+                        case KFM_Player.COND_POISON:
+                            statusString1 = statusString1 + "PSN";
+                            break;
+
+                        case KFM_Player.COND_PARALYZE:
+                            statusString1 = statusString1 + " PAR";
+                            break;
+
+                        case KFM_Player.COND_DARK:
+                            statusString2 = statusString2 + "DRK";
+                            break;
+
+                        case KFM_Player.COND_CURSE:
+                            statusString2 = statusString2 + "CRS";
+                            break;
+                    }
+
+                    hasAnyStatus = true;
+                }
+
+                if (!hasAnyStatus)
+                    KFM_Renderer.DrawString("FINE", 225, 130, 8);
+                else
+                {
+                    KFM_Renderer.DrawString(statusString1, 225, 130, 8);
+                    KFM_Renderer.DrawString(statusString2, 225, 150, 8);
+                }
+
+                KFM_Renderer.DrawString("BASE ATK.", 115, 170, 0);
+                KFM_Renderer.DrawString("" + player.attackBase, 225, 170, KFM_Renderer.TEXT_HALIGN_LEFT);
+                KFM_Renderer.DrawString("BASE DEF.", 115, 190, 0);
+                KFM_Renderer.DrawString("" + player.defenseBase, 225, 190, KFM_Renderer.TEXT_HALIGN_LEFT);
+                KFM_Renderer.DrawString("ATK.", 115, 210, 0);
+                KFM_Renderer.DrawString("" + player.attack, 225, 210, KFM_Renderer.TEXT_HALIGN_LEFT);
+                KFM_Renderer.DrawString("DEF.", 115, 230, 0);
+                KFM_Renderer.DrawString("" + player.defense, 225, 230, KFM_Renderer.TEXT_HALIGN_LEFT);
+            break;
+
+            //
+            // DRAW EQUIPMENT MENU
+            //
+            case 9:
+                KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+
+                // Draw Frames
+                for (int i = 0; i < 6; ++i)
+                    KFM_Renderer.DrawRoundRect(20, 45 + 20 * i, 60, 16);
+
+                KFM_Renderer.DrawString("ARMS", 22, 47, 0);
+                KFM_Renderer.DrawString("HEAD", 22, 67, 0);
+                KFM_Renderer.DrawString("BODY", 22, 87, 0);
+                KFM_Renderer.DrawString("ARMS", 22, 107, 0);
+                KFM_Renderer.DrawString("LEGS", 22, 127, 0);
+                KFM_Renderer.DrawString("SHIELD", 22, 147, 0);
+
+                KFM_Renderer.DrawRoundRect(85, 45, 145, 116);
+
+                if (player.currentWeaponID != 40) 
+                    KFM_Renderer.DrawString(KFM_Text.ItemName[player.currentWeaponID], 90, 47, 0);
+
+                if (player.currentHelmID != 40) 
+                    KFM_Renderer.DrawString(KFM_Text.ItemName[player.currentHelmID], 90, 67, 0);
+
+                if (player.currentPlateID != 40) 
+                    KFM_Renderer.DrawString(KFM_Text.ItemName[player.currentPlateID], 90, 87, 0);
+
+                if (player.currentArmsID != 40) 
+                    KFM_Renderer.DrawString(KFM_Text.ItemName[player.currentArmsID], 90, 107, 0);
+
+                if (player.currentLegsID != 40) 
+                    KFM_Renderer.DrawString(KFM_Text.ItemName[player.currentLegsID], 90, 127, 0);
+
+                if (player.currentShieldID != 40) 
+                    KFM_Renderer.DrawString(KFM_Text.ItemName[player.currentShieldID], 90, 147, 0);
+
+            break;
+
+            //
+            // DRAW SELECT EQUIP
+            //
+            case 10:
+                KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+
+                for (int i = 0; i < 6; ++i)
+                    KFM_Renderer.DrawRoundRect(20, 45 + (20 * i), 60, 16);
+
+                KFM_Renderer.DrawString("ARMS", 22, 47, 0);
+                KFM_Renderer.DrawString("HEAD", 22, 67, 0);
+                KFM_Renderer.DrawString("BODY", 22, 87, 0);
+                KFM_Renderer.DrawString("ARMS", 22, 107, 0);
+                KFM_Renderer.DrawString("LEGS", 22, 127, 0);
+                KFM_Renderer.DrawString("SHIELD", 22, 147, 0);
+
+                int n100;
+                int n3;
+                int n4;
+                KFM_Renderer.DrawRoundRect(85, 45, 145, 205);
+                if (this.m_cursor_now < 10) {
+                    n100 = 0;
+                    n4 = this.m_cursor_max[5] < 10 ? this.m_cursor_max[5] : 10;
+                } else {
+                    n100 = 10;
+                    n4 = this.m_cursor_max[5];
+                }
+
+                for (n3 = n100; n3 < n4; ++n3) 
+                {
+                    KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                    KFM_Renderer.DrawString(KFM_Text.ItemName[this.m_array[n3]], 105, 47 + 20 * (n3 % 10), 0);
+                    KFM_Renderer.SetColour(KFM_Renderer.COLOUR_YELLOW);
+                    if (this.m_array[n3] != this.m_player_eq) continue;
+                    KFM_Renderer.DrawString("E", 225, 47 + 20 * (n3 % 10), 8);
+                }
+
+                if (this.m_cursor_max[5] >= 10) 
+                {
+                    KFM_Renderer.SetColour(KFM_Renderer.COLOUR_BLACK);
+                    KFM_Renderer.DrawFilledRoundRect(200, 245, 30, 14);
+                    KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                    KFM_Renderer.DrawRoundRect(200, 245, 30, 14);
+                    n3 = this.m_cursor_now < 10 ? 1 : 2;
+                    KFM_Renderer.DrawString(n3 + "/2", 225, 247, 8);
+                }
+
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                KFM_Renderer.DrawRoundRect(20, 165, 60, 85);
+                
+                if (this.m_array_num > 0) 
+                {
+                    KFM_Renderer.DrawRoundRect(20, 165, 60, 85);
+                    KFM_Renderer.DrawString("STAT", 50, 170, 1);
+                    n3 = 0;
+                    int n5 = 0;
+                    if (this.m_eq_now == 0) 
+                    {
+                        n3 = player.attackBase;
+                        n5 = player.attack - this.m_item_data[player.currentWeaponID][0] + this.m_item_data[this.m_array[this.m_cursor_now]][0];
+                        KFM_Renderer.DrawString("ATK.", 50, 183, 1);
+                        KFM_Renderer.DrawString("" + player.attack, 50, 200, 1);
+                    } 
+                    else 
+                    {
+                        n3 = player.defense - this.m_item_data[this.m_player_eq][0];
+                        n5 = player.defense - this.m_item_data[this.m_player_eq][0] + this.m_item_data[this.m_array[this.m_cursor_now]][0];
+                        KFM_Renderer.DrawString("DEF.", 50, 183, 1);
+                        KFM_Renderer.DrawString("" + player.defense, 50, 200, 1);
+                    }
+
+                    KFM_Renderer.DrawString("TO", 50, 215, 1);
+                    if (this.m_player_eq == this.m_array[this.m_cursor_now]) 
+                        KFM_Renderer.DrawString("" + n3, 50, 230, 1);
+                    else 
+                        KFM_Renderer.DrawString("" + n5, 50, 230, 1);
+                }
             break;
 
             //
@@ -4866,46 +5078,170 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
             //
             case 11:
                 // Configure graphics for the scene...
-                m_font_select = m_font_small;
-                graphics.setFont(m_font_select);
-                graphics.setColor(RED);
+                KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_RED);
 
                 // Need to switch again for the prompt title
                 switch (m_end_select)
                 {
                     case 0: 
-                        drawString(graphics, "~ LOAD GAME ~", getWidth() / 2, 60, 1); 
+                        KFM_Renderer.DrawString("~ LOAD GAME ~", getWidth() / 2, 60, KFM_Renderer.TEXT_HALIGN_CENTER);
                     break;
 
                     case 1:
-                        drawString(graphics, "~ SUSPEND GAME ~", getWidth() / 2, 60, 1);
+                        KFM_Renderer.DrawString("~ SUSPEND GAME ~", getWidth() / 2, 60, KFM_Renderer.TEXT_HALIGN_CENTER);
                     break;
 
                     default:
-                        drawString(graphics, "~ QUIT GAME ~", getWidth() / 2, 60, 1);
+                        KFM_Renderer.DrawString("~ QUIT GAME ~", getWidth() / 2, 60, KFM_Renderer.TEXT_HALIGN_CENTER);
                     break;
                 }
 
                 // Now draw the prompt text itself
-                graphics.setColor(WHITE);
-                this.drawString(graphics, "ARE YOU SURE?", this.getWidth() / 2, 100, 1);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                KFM_Renderer.DrawString("ARE YOU SURE?", this.getWidth() / 2, 100, KFM_Renderer.TEXT_HALIGN_CENTER);
                 
-                // And finally, the prompt options
-                this.drawString(graphics, "YES", this.getWidth() / 2, 147, 1);
-                this.drawString(graphics, "NO", this.getWidth() / 2, 177, 1);
+                // And finally, the prompt options 
+                KFM_Renderer.DrawString("YES", this.getWidth() / 2, 147, KFM_Renderer.TEXT_HALIGN_CENTER);
+                KFM_Renderer.DrawString("NO", this.getWidth() / 2, 177,  KFM_Renderer.TEXT_HALIGN_CENTER);
             break;
 
             // DRAW EXIT SCREEN
             case 12:
-                this.setFont(graphics, this.m_font_small);
-                graphics.setColor(this.WHITE);
-                if (this.m_end_select == 0) {
-                    this.drawString(graphics, "LOADING GAME...", this.getWidth() / 2, 115, 1);
-                } else if (this.m_end_select == 1) {
-                    this.drawString(graphics, "SAVING SUSPEND DATA...", this.getWidth() / 2, 115, 1);
-                    this.drawString(graphics, "YOU CAN CONTINUE FROM THIS POINT.", this.getWidth() / 2, 145, 1);
+                KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+
+                switch (this.m_end_select)
+                {
+                    case 0:
+                        KFM_Renderer.DrawString("LOADING GAME...", this.getWidth() / 2, 115, KFM_Renderer.TEXT_HALIGN_CENTER);
+                    break;
+                        
+                    case 1:
+                        KFM_Renderer.DrawString("SAVING SUSPEND DATA...", this.getWidth() / 2, 115, KFM_Renderer.TEXT_HALIGN_CENTER);
+                        KFM_Renderer.DrawString("YOU CAN CONTINUE FROM THIS POINT.", this.getWidth() / 2, 145, KFM_Renderer.TEXT_HALIGN_CENTER);
+                    break;
+
+                    default:
+                        KFM_Renderer.DrawString("EXITING GAME...", this.getWidth() / 2, 115, KFM_Renderer.TEXT_HALIGN_CENTER);
+                    break;
+                }
+            break;
+
+            // DRAW AUTO MAP
+            case 13:
+                int n6;
+                int n7;
+                int n2 = 45 + (150 - this.m_grid_x * 5) / 2;
+                int n8 = 57 + (150 - this.m_grid_z * 5) / 2;
+                for (n7 = 0; n7 < this.m_grid_z; ++n7) {
+                    for (n6 = 0; n6 < this.m_grid_x; ++n6) {
+                        int n9;
+                        int n = n7 * this.m_grid_x + n6;
+                        if (this.m_map_ID < 0) {
+                            if (n7 == 0 && n6 == 0) {
+                                graphics.setColor(this.OUDO);
+                            } else if (this.m_block_exist[n] == 2) {
+                                graphics.setColor(this.OUDO);
+                            } else if (this.m_block_exist[n] == 1) {
+                                graphics.setColor(this.ORANGE);
+                            } else if (this.m_block_exist[n] == 4) {
+                                graphics.setColor(this.YELLOW);
+                            } else if (this.m_block_exist[n] == 3) {
+                                graphics.setColor(this.HADA);
+                            } else if (this.m_block_level[n] == -1) {
+                                graphics.setColor(this.BLACK);
+                            } else if (this.m_block_level[n] == -200) {
+                                graphics.setColor(this.DOKU);
+                            } else if (this.m_block_level[n] < -200) {
+                                graphics.setColor(this.BLACK);
+                            } else {
+                                graphics.setColor(this.HADA);
+                            }
+                            if (this.m_block_exist[n] != 2) {
+                                if (n == this.m_start_grid) {
+                                    graphics.setColor(this.WATER);
+                                } else if (n == this.m_goal_grid) {
+                                    graphics.setColor(this.BLUE);
+                                } else {
+                                    for (n9 = 0; n9 < this.m_box_num; ++n9) {
+                                        if (n != this.m_box[n9][0]) continue;
+                                        graphics.setColor(this.GREEN);
+                                    }
+                                }
+                            }
+                        } else if (this.m_map_memory[this.m_map_ID][n]) {
+                            if (this.m_map_info[n] == 3) {
+                                graphics.setColor(this.OUDO);
+                            } else if (this.m_map_info[n] == 4) {
+                                graphics.setColor(this.HADA);
+                            } else if (this.m_map_info[n] == 2) {
+                                graphics.setColor(this.YELLOW);
+                            } else if (this.m_map_info[n] == 5) {
+                                graphics.setColor(this.DOKU);
+                            } else if (this.m_map_info[n] == 6) {
+                                graphics.setColor(this.BLACK);
+                            }
+                            if (this.m_block_exist[n] != 2) {
+                                if (n == this.m_start_grid) {
+                                    graphics.setColor(this.WATER);
+                                } else if (n == this.m_goal_grid) {
+                                    graphics.setColor(this.BLUE);
+                                } else {
+                                    for (n9 = 0; n9 < this.m_box_num; ++n9) {
+                                        if (n != this.m_box[n9][0]) continue;
+                                        graphics.setColor(this.GREEN);
+                                    }
+                                }
+                            }
+                        } else {
+                            graphics.setColor(this.GRAY);
+                        }
+                        graphics.fillRect(n2 + n6 * 5, n8 + n7 * 5, 5, 5);
+                    }
+                }
+
+                n7 = n2 + this.m_player_grid % this.m_grid_x * 5;
+                n6 = n8 + this.m_player_grid / this.m_grid_x * 5;
+
+                // This appears to sadly be the location of the player...
+                graphics.setColor(this.RED);
+                if (player.rotY < 256 || player.rotY > 3840) {
+                    graphics.fillRect(n7, n6, 5, 1);
+                    graphics.fillRect(n7 + 1, n6 + 1, 3, 2);
+                    graphics.fillRect(n7 + 2, n6 + 3, 1, 2);
+                } else if (player.rotY >= 256 && player.rotY < 768) {
+                    graphics.fillRect(n7, n6 + 2, 1, 2);
+                    graphics.fillRect(n7 + 1, n6 + 1, 1, 3);
+                    graphics.fillRect(n7 + 2, n6, 2, 4);
+                    graphics.fillRect(n7 + 3, n6 + 3, 2, 2);
+                } else if (player.rotY >= 768 && player.rotY < 1280) {
+                    graphics.fillRect(n7, n6, 1, 5);
+                    graphics.fillRect(n7 + 1, n6 + 1, 2, 3);
+                    graphics.fillRect(n7 + 3, n6 + 2, 2, 1);
+                } else if (player.rotY >= 1280 && player.rotY < 1792) {
+                    graphics.fillRect(n7, n6 + 1, 1, 2);
+                    graphics.fillRect(n7 + 1, n6 + 1, 1, 3);
+                    graphics.fillRect(n7 + 2, n6 + 1, 2, 4);
+                    graphics.fillRect(n7 + 3, n6, 2, 2);
+                } else if (player.rotY >= 1792 && player.rotY < 2304) {
+                    graphics.fillRect(n7 + 2, n6, 1, 2);
+                    graphics.fillRect(n7 + 1, n6 + 2, 3, 2);
+                    graphics.fillRect(n7, n6 + 4, 5, 1);
+                } else if (player.rotY >= 2304 && player.rotY < 2816) {
+                    graphics.fillRect(n7, n6, 2, 2);
+                    graphics.fillRect(n7 + 1, n6 + 1, 2, 4);
+                    graphics.fillRect(n7 + 3, n6 + 1, 1, 3);
+                    graphics.fillRect(n7 + 4, n6 + 1, 1, 2);
+                } else if (player.rotY >= 2816 && player.rotY < 3328) {
+                    graphics.fillRect(n7, n6 + 2, 2, 1);
+                    graphics.fillRect(n7 + 2, n6 + 1, 2, 3);
+                    graphics.fillRect(n7 + 4, n6, 1, 5);
                 } else {
-                    this.drawString(graphics, "EXITING GAME...", this.getWidth() / 2, 115, 1);
+                    graphics.fillRect(n7, n6 + 3, 2, 2);
+                    graphics.fillRect(n7 + 1, n6, 2, 4);
+                    graphics.fillRect(n7 + 3, n6 + 1, 1, 3);
+                    graphics.fillRect(n7 + 4, n6 + 2, 1, 2);
                 }
             break;
 
@@ -4913,65 +5249,67 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
             // DRAW OPTIONS SCREEN
             //
             case 15:
-                this.setFont(graphics, this.m_font_small);
-                graphics.setColor(this.WHITE);
-                this.drawString(graphics, "VIBRATION", 60, 65, 0);
-                this.drawString(graphics, "SOUND", 60, 105, 0);
-                this.drawString(graphics, "HEAD BOB", 60, 145, 0);
-                this.drawString(graphics, "AUTO WALK", 60, 185, 0);
-                for (int i = 0; i < 4; ++i) {
-                    graphics.setColor(this.WHITE);
-                    this.drawRoundRect(graphics, 55, 60 + 40 * i, 140, 22);
-                    if (this.m_option[i]) {
-                        graphics.setColor(this.ORANGE);
-                        this.drawString(graphics, "ON", 185, 65 + 40 * i, 8);
-                        continue;
-                    }
-                    graphics.setColor(this.GRAY);
-                    this.drawString(graphics, "OFF", 185, 65 + 40 * i, 8);
+                KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+
+                // Draw Option Frame and Value
+                for (int i = 0; i < 4; ++i)
+                {
+                    // Frame
+                    KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                    KFM_Renderer.DrawRoundRect(55, 60 + 40 * i, 140, 22);
+
+                    // Label
+                    KFM_Renderer.SetColour(m_option[i] ? KFM_Renderer.COLOUR_ORANGE : KFM_Renderer.COLOUR_LTGREY);
+                    KFM_Renderer.DrawString(m_option[i] ? "ON" : "OFF", 185, 65 + (40 * i), KFM_Renderer.TEXT_HALIGN_LEFT);
                 }
+
+                // Draw Option Labels
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                KFM_Renderer.DrawString("VIBRATION", 60, 65, 0);
+                KFM_Renderer.DrawString("SOUND    ", 60, 105, 0);
+                KFM_Renderer.DrawString("HEAD BOB ", 60, 145, 0);
+                KFM_Renderer.DrawString("AUTO WALK", 60, 185, 0);
             break;
 
             //
             // DRAW CONTROLS SCREEN
             //
             case 16:
-
-                // Configure Draw Parameters
-                m_font_select = m_font_small;
-                graphics.setFont(m_font_select);
-                graphics.setColor(this.WHITE);
+                KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
 
                 // Draw Frame
-                this.drawRoundRect(graphics, 10, 40, 220, 210);
+                KFM_Renderer.DrawRoundRect(10, 40, 220, 210);
+
+                KFM_Renderer.DrawString("ENTER", 15, 45, 0);
 
                 // Draw Text
-                this.drawString(graphics, "ENTER", 15, 45, 0);
-                this.drawString(graphics, " : ACTION", 65, 45, 0);
-                this.drawString(graphics, "SOFT1", 15, 60, 0);
-                this.drawString(graphics, " : MENU", 65, 60, 0);
-                this.drawString(graphics, "SOFT2", 15, 75, 0);
-                this.drawString(graphics, " : ATTACK", 65, 75, 0);
-                this.drawString(graphics, "UP", 15, 95, 0);
-                this.drawString(graphics, " : FORWARD", 65, 95, 0);
-                this.drawString(graphics, "DOWN", 15, 110, 0);
-                this.drawString(graphics, " : BACKWARD", 65, 110, 0);
-                this.drawString(graphics, "LEFT", 15, 125, 0);
-                this.drawString(graphics, " : LOOK LEFT", 65, 125, 0);
-                this.drawString(graphics, "RIGHT", 15, 140, 0);
-                this.drawString(graphics, " : LOOK RIGHT", 65, 140, 0);
-                this.drawString(graphics, "NUM4", 15, 160, 0);
-                this.drawString(graphics, " : STRAFE LEFT", 65, 160, 0);
-                this.drawString(graphics, "NUM6", 15, 175, 0);
-                this.drawString(graphics, " : STRAFE RIGHT", 65, 175, 0);
-                this.drawString(graphics, "NUM2", 15, 190, 0);
-                this.drawString(graphics, " : LOOK UP", 65, 190, 0);
-                this.drawString(graphics, "NUM8", 15, 205, 0);
-                this.drawString(graphics, " : LOOK DOWN", 65, 205, 0);
-                this.drawString(graphics, "NUM5", 15, 220, 0);
-                this.drawString(graphics, " : OPEN MAP", 65, 220, 0);
-                this.drawString(graphics, "NUM0", 15, 235, 0);
-                this.drawString(graphics, " : ATTACK", 65, 235, 0);
+                KFM_Renderer.DrawString("ENTER", 15, 45, 0);
+                KFM_Renderer.DrawString(" : ACTION", 65, 45, 0);
+                KFM_Renderer.DrawString("SOFT1", 15, 60, 0);
+                KFM_Renderer.DrawString(" : MENU", 65, 60, 0);
+                KFM_Renderer.DrawString("SOFT2", 15, 75, 0);
+                KFM_Renderer.DrawString(" : ATTACK", 65, 75, 0);
+                KFM_Renderer.DrawString("UP", 15, 95, 0);
+                KFM_Renderer.DrawString(" : FORWARD", 65, 95, 0);
+                KFM_Renderer.DrawString("DOWN", 15, 110, 0);
+                KFM_Renderer.DrawString(" : BACKWARD", 65, 110, 0);
+                KFM_Renderer.DrawString("LEFT", 15, 125, 0);
+                KFM_Renderer.DrawString(" : LOOK LEFT", 65, 125, 0);
+                KFM_Renderer.DrawString("RIGHT", 15, 140, 0);
+                KFM_Renderer.DrawString(" : LOOK RIGHT", 65, 140, 0);
+                KFM_Renderer.DrawString("NUM4", 15, 160, 0);
+                KFM_Renderer.DrawString(" : STRAFE LEFT", 65, 160, 0);
+                KFM_Renderer.DrawString("NUM6", 15, 175, 0);
+                KFM_Renderer.DrawString(" : STRAFE RIGHT", 65, 175, 0);
+                KFM_Renderer.DrawString("NUM2", 15, 190, 0);
+                KFM_Renderer.DrawString(" : LOOK UP", 65, 190, 0);
+                KFM_Renderer.DrawString("NUM8", 15, 205, 0);
+                KFM_Renderer.DrawString(" : LOOK DOWN", 65, 205, 0);
+                KFM_Renderer.DrawString("NUM5", 15, 220, 0);
+                KFM_Renderer.DrawString(" : OPEN MAP", 65, 220, 0);
+                KFM_Renderer.DrawString("NUM0", 15, 235, 0);
+                KFM_Renderer.DrawString(" : ATTACK", 65, 235, 0);
             break;
 
             // Fallback to the original method...
@@ -4980,423 +5318,202 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void drawMode(Graphics graphics) {
+    private void drawMode(Graphics graphics) 
+    {
         int n;
         int n2;
-        if (this.m_mode == 6 || this.m_mode == 7 || this.m_mode == 8 || this.m_mode == 14) {
-            graphics.setColor(this.WHITE);
-            this.setFont(graphics, this.m_font_small);
-            this.drawString(graphics, "USE ITEM", 22, 50, 0);
-            this.drawString(graphics, "EQUIPMENT", 22, 70, 0);
-            this.drawString(graphics, "OPEN MAP", 22, 90, 0);
-            this.drawString(graphics, "OPTIONS", 22, 110, 0);
-            this.drawString(graphics, "CONTROLS", 22, 130, 0);
-            this.drawString(graphics, "LOAD", 22, 150, 0);
-            this.drawString(graphics, "SUSPEND", 22, 170, 0);
-            this.drawString(graphics, "EXIT", 22, 190, 0);
-            for (n2 = 0; n2 < 8; ++n2) {
-                this.drawRoundRect(graphics, 20, 48 + 20 * n2, 80, 16);
-            }
-            if (this.m_save_data != 2) {
-                graphics.setColor(this.GRAY);
-                this.drawString(graphics, "LOAD", 22, 150, 0);
-                this.drawRoundRect(graphics, 20, 148, 80, 16);
-            }
-        }
-
-        if (this.m_mode == 6) {
-            graphics.setColor(this.WHITE);
-            this.setFont(graphics, this.m_font_small);
-            this.drawRoundRect(graphics, 110, 45, 120, 205);
-            this.drawString(graphics, "EXP.", 115, 50, 0);
-            this.drawString(graphics, "" + player.experience, 225, 50, 8);
-            this.drawString(graphics, "LEVEL", 115, 70, 0);
-            this.drawString(graphics, "" + player.level, 225, 70, 8);
-            this.drawString(graphics, "FLOOR", 115, 90, 0);
-            this.drawString(graphics, "" + this.m_step_No, 225, 90, 8);
-            this.drawString(graphics, "HP", 115, 110, 0);
-            this.drawString(graphics, player.currentHP + "/" + player.maxHP, 225, 110, 8);
-            this.drawString(graphics, "STATUS", 115, 130, 0);
-            n2 = 0;
-            String string = " ";
-            String string2 = " ";
-            String string3 = " ";
-            for (n = 0; n < 4; ++n) {
-                if (this.m_player_condi[n][0] != 1) continue;
-                string3 = n == 0 ? "POISON" : (n == 1 ? "STUN" : (n == 2 ? "DARK" : "CURSE"));
-                if (n2 < 2) {
-                    string = string + " " + string3;
-                } else {
-                    string2 = string2 + " " + string3;
-                }
-                n2 = (byte)(n2 + 1);
-            }
-            if (n2 == 0) {
-                this.drawString(graphics, "FINE", 225, 130, 8);
-            } else {
-                this.drawString(graphics, "" + string, 225, 130, 8);
-                this.drawString(graphics, "" + string2, 225, 150, 8);
-            }
-            this.drawString(graphics, "BASE ATK.", 115, 170, 0);
-            this.drawString(graphics, "" + player.attackBase, 225, 170, 8);
-            this.drawString(graphics, "BASE DEF.", 115, 190, 0);
-            this.drawString(graphics, "" + player.defenseBase, 225, 190, 8);
-            this.drawString(graphics, "ATK.", 115, 210, 0);
-            this.drawString(graphics, "" + player.attack, 225, 210, 8);
-            this.drawString(graphics, "DEF.", 115, 230, 0);
-            this.drawString(graphics, "" + player.defense, 225, 230, 8);
-        } 
-        else if (this.m_mode == 7 || this.m_mode == 8 || this.m_mode == 14) 
+        if (this.m_mode == 7 || this.m_mode == 8 || this.m_mode == 14) 
         {
-            this.setFont(graphics, this.m_font_small);
-            graphics.setColor(this.WHITE);
-            this.drawRoundRect(graphics, 105, 45, 125, 195);
-            for (n2 = 0; n2 < this.m_array_num; ++n2) {
-                this.drawString(graphics, KingsField_Text.ItemName[this.m_array[n2]], 125, 47 + 20 * n2, 0);
-                this.drawString(graphics, "" + player.inventory[this.m_array[n2]], 225, 47 + 20 * n2, 8);
-            }
-            if (this.m_mode == 8) {
-                graphics.setColor(this.BLACK);
-                this.fillRoundRect(graphics, 65, 88, 110, 87, 5, 5);
-                graphics.setColor(this.WHITE);
-                this.drawRoundRect(graphics, 65, 88, 110, 87);
-                this.drawString(graphics, KingsField_Text.ItemName[this.m_array[this.m_item_select_i]] + "", this.getWidth() / 2, 98, 1);
-                this.drawString(graphics, "USE THIS ITEM?", this.getWidth() / 2, 115, 1);
-                this.drawString(graphics, "YES", 110, 135, 0);
-                this.drawString(graphics, "NO", 110, 155, 0);
-            } else if (this.m_mode == 14) {
-                graphics.setColor(this.BLACK);
-                this.fillRoundRect(graphics, 45, 100, 150, 60, 5, 5);
-                graphics.setColor(this.WHITE);
-                this.drawRoundRect(graphics, 45, 100, 150, 60);
-                this.drawString(graphics, "KEYS ARE USED", this.getWidth() / 2, 110, 1);
-                this.drawString(graphics, "AUTOMATICALLY BY", this.getWidth() / 2, 125, 1);
-                this.drawString(graphics, "PRESSING ACTION.", this.getWidth() / 2, 140, 1);
-            }
-        } 
-        else if (this.m_mode == 9 || this.m_mode == 10) 
-        {
-            this.setFont(graphics, this.m_font_small);
-            graphics.setColor(this.WHITE);
-            for (n2 = 0; n2 < 6; ++n2) {
-                this.drawRoundRect(graphics, 20, 45 + 20 * n2, 60, 16);
-            }
-            this.drawString(graphics, "ARMS", 22, 47, 0);
-            this.drawString(graphics, "HEAD", 22, 67, 0);
-            this.drawString(graphics, "BODY", 22, 87, 0);
-            this.drawString(graphics, "ARMS", 22, 107, 0);
-            this.drawString(graphics, "LEGS", 22, 127, 0);
-            this.drawString(graphics, "SHIELD", 22, 147, 0);
+            KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+            KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
 
-            if (this.m_mode == 9) 
+            KFM_Renderer.DrawString("USE ITEM", 22, 50, 0);
+            KFM_Renderer.DrawString("EQUIPMENT", 22, 70, 0);
+            KFM_Renderer.DrawString("OPEN MAP", 22, 90, 0);
+            KFM_Renderer.DrawString("OPTIONS", 22, 110, 0);
+            KFM_Renderer.DrawString("CONTROLS", 22, 130, 0);
+            KFM_Renderer.DrawString("LOAD", 22, 150, 0);
+            KFM_Renderer.DrawString("SUSPEND", 22, 170, 0);
+            KFM_Renderer.DrawString("EXIT", 22, 190, 0);
+
+            for (n2 = 0; n2 < 8; ++n2) 
+                KFM_Renderer.DrawRoundRect(20, 48 + 20 * n2, 80, 16);
+
+            if (this.m_save_data != 2) 
             {
-                this.drawRoundRect(graphics, 85, 45, 145, 116);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_LTGREY);
+                KFM_Renderer.DrawString("LOAD", 22, 150, 0);
+                KFM_Renderer.DrawRoundRect(20, 148, 80, 16);
+            }
 
-                if (player.currentWeaponID != 40) 
-                {
-                    this.drawString(graphics, KingsField_Text.ItemName[player.currentWeaponID], 90, 47, 0);
-                }
-                if (player.currentHelmID != 40) 
-                {
-                    this.drawString(graphics, KingsField_Text.ItemName[player.currentHelmID], 90, 67, 0);
-                }
-                if (player.currentPlateID != 40) 
-                {
-                    this.drawString(graphics, KingsField_Text.ItemName[player.currentPlateID], 90, 87, 0);
-                }
-                if (player.currentArmsID != 40) 
-                {
-                    this.drawString(graphics, KingsField_Text.ItemName[player.currentArmsID], 90, 107, 0);
-                }
-                if (player.currentLegsID != 40) 
-                {
-                    this.drawString(graphics, KingsField_Text.ItemName[player.currentLegsID], 90, 127, 0);
-                }
-                if (player.currentShieldID != 40) 
-                {
-                    this.drawString(graphics, KingsField_Text.ItemName[player.currentShieldID], 90, 147, 0);
-                }
+            KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+            KFM_Renderer.DrawRoundRect(105, 45, 125, 195);
+            for (n2 = 0; n2 < this.m_array_num; ++n2) 
+            {
+                KFM_Renderer.DrawString(KFM_Text.ItemName[this.m_array[n2]], 125, 47 + 20 * n2, 0);
+                KFM_Renderer.DrawString("" + player.inventory[this.m_array[n2]], 225, 47 + 20 * n2, 8);
+            }
+
+            if (this.m_mode == 8) 
+            {
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_BLACK);
+                KFM_Renderer.DrawFilledRoundRect(65, 88, 110, 87);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                KFM_Renderer.DrawRoundRect(65, 88, 110, 87);
+
+                KFM_Renderer.DrawString(KFM_Text.ItemName[this.m_array[this.m_item_select_i]] + "", this.getWidth() / 2, 98, 1);
+                KFM_Renderer.DrawString("USE THIS ITEM?", this.getWidth() / 2, 115, 1);
+                KFM_Renderer.DrawString("YES", 110, 135, 0);
+                KFM_Renderer.DrawString("NO", 110, 155, 0);
             } 
-            else 
+            else if (this.m_mode == 14) 
             {
-                int n3;
-                int n4;
-                this.drawRoundRect(graphics, 85, 45, 145, 205);
-                if (this.m_cursor_now < 10) {
-                    n2 = 0;
-                    n4 = this.m_cursor_max[5] < 10 ? this.m_cursor_max[5] : 10;
-                } else {
-                    n2 = 10;
-                    n4 = this.m_cursor_max[5];
-                }
-                for (n3 = n2; n3 < n4; ++n3) {
-                    graphics.setColor(this.WHITE);
-                    this.drawString(graphics, KingsField_Text.ItemName[this.m_array[n3]], 105, 47 + 20 * (n3 % 10), 0);
-                    graphics.setColor(this.YELLOW);
-                    if (this.m_array[n3] != this.m_player_eq) continue;
-                    this.drawString(graphics, "E", 225, 47 + 20 * (n3 % 10), 8);
-                }
-                if (this.m_cursor_max[5] >= 10) {
-                    graphics.setColor(this.BLACK);
-                    this.fillRoundRect(graphics, 200, 245, 30, 14, 5, 5);
-                    graphics.setColor(this.WHITE);
-                    this.drawRoundRect(graphics, 200, 245, 30, 14);
-                    n3 = this.m_cursor_now < 10 ? 1 : 2;
-                    this.drawString(graphics, n3 + "/2", 225, 247, 8);
-                }
-                graphics.setColor(this.WHITE);
-                this.drawRoundRect(graphics, 20, 165, 60, 85);
-                if (this.m_array_num > 0) {
-                    this.drawRoundRect(graphics, 20, 165, 60, 85);
-                    this.drawString(graphics, "STAT", 50, 170, 1);
-                    n3 = 0;
-                    int n5 = 0;
-                    if (this.m_eq_now == 0) {
-                        n3 = player.attackBase;
-                        n5 = player.attack - this.m_item_data[player.currentWeaponID][0] + this.m_item_data[this.m_array[this.m_cursor_now]][0];
-                        this.drawString(graphics, "ATK.", 50, 183, 1);
-                        this.drawString(graphics, "" + player.attack, 50, 200, 1);
-                    } else {
-                        n3 = player.defense - this.m_item_data[this.m_player_eq][0];
-                        n5 = player.defense - this.m_item_data[this.m_player_eq][0] + this.m_item_data[this.m_array[this.m_cursor_now]][0];
-                        this.drawString(graphics, "DEF.", 50, 183, 1);
-                        this.drawString(graphics, "" + player.defense, 50, 200, 1);
-                    }
-                    this.drawString(graphics, "TO", 50, 215, 1);
-                    if (this.m_player_eq == this.m_array[this.m_cursor_now]) {
-                        this.drawString(graphics, "" + n3, 50, 230, 1);
-                    } else {
-                        this.drawString(graphics, "" + n5, 50, 230, 1);
-                    }
-                }
-            }
-        } 
-        else if (this.m_mode == 13) 
-        {
-            int n6;
-            int n7;
-            n2 = 45 + (150 - this.m_grid_x * 5) / 2;
-            int n8 = 57 + (150 - this.m_grid_z * 5) / 2;
-            for (n7 = 0; n7 < this.m_grid_z; ++n7) {
-                for (n6 = 0; n6 < this.m_grid_x; ++n6) {
-                    int n9;
-                    n = n7 * this.m_grid_x + n6;
-                    if (this.m_map_ID < 0) {
-                        if (n7 == 0 && n6 == 0) {
-                            graphics.setColor(this.OUDO);
-                        } else if (this.m_block_exist[n] == 2) {
-                            graphics.setColor(this.OUDO);
-                        } else if (this.m_block_exist[n] == 1) {
-                            graphics.setColor(this.ORANGE);
-                        } else if (this.m_block_exist[n] == 4) {
-                            graphics.setColor(this.YELLOW);
-                        } else if (this.m_block_exist[n] == 3) {
-                            graphics.setColor(this.HADA);
-                        } else if (this.m_block_level[n] == -1) {
-                            graphics.setColor(this.BLACK);
-                        } else if (this.m_block_level[n] == -200) {
-                            graphics.setColor(this.DOKU);
-                        } else if (this.m_block_level[n] < -200) {
-                            graphics.setColor(this.BLACK);
-                        } else {
-                            graphics.setColor(this.HADA);
-                        }
-                        if (this.m_block_exist[n] != 2) {
-                            if (n == this.m_start_grid) {
-                                graphics.setColor(this.WATER);
-                            } else if (n == this.m_goal_grid) {
-                                graphics.setColor(this.BLUE);
-                            } else {
-                                for (n9 = 0; n9 < this.m_box_num; ++n9) {
-                                    if (n != this.m_box[n9][0]) continue;
-                                    graphics.setColor(this.GREEN);
-                                }
-                            }
-                        }
-                    } else if (this.m_map_memory[this.m_map_ID][n]) {
-                        if (this.m_map_info[n] == 3) {
-                            graphics.setColor(this.OUDO);
-                        } else if (this.m_map_info[n] == 4) {
-                            graphics.setColor(this.HADA);
-                        } else if (this.m_map_info[n] == 2) {
-                            graphics.setColor(this.YELLOW);
-                        } else if (this.m_map_info[n] == 5) {
-                            graphics.setColor(this.DOKU);
-                        } else if (this.m_map_info[n] == 6) {
-                            graphics.setColor(this.BLACK);
-                        }
-                        if (this.m_block_exist[n] != 2) {
-                            if (n == this.m_start_grid) {
-                                graphics.setColor(this.WATER);
-                            } else if (n == this.m_goal_grid) {
-                                graphics.setColor(this.BLUE);
-                            } else {
-                                for (n9 = 0; n9 < this.m_box_num; ++n9) {
-                                    if (n != this.m_box[n9][0]) continue;
-                                    graphics.setColor(this.GREEN);
-                                }
-                            }
-                        }
-                    } else {
-                        graphics.setColor(this.GRAY);
-                    }
-                    graphics.fillRect(n2 + n6 * 5, n8 + n7 * 5, 5, 5);
-                }
-            }
-            n7 = n2 + this.m_player_grid % this.m_grid_x * 5;
-            n6 = n8 + this.m_player_grid / this.m_grid_x * 5;
-            graphics.setColor(this.RED);
-            if (player.rotY < 256 || player.rotY > 3840) {
-                graphics.fillRect(n7, n6, 5, 1);
-                graphics.fillRect(n7 + 1, n6 + 1, 3, 2);
-                graphics.fillRect(n7 + 2, n6 + 3, 1, 2);
-            } else if (player.rotY >= 256 && player.rotY < 768) {
-                graphics.fillRect(n7, n6 + 2, 1, 2);
-                graphics.fillRect(n7 + 1, n6 + 1, 1, 3);
-                graphics.fillRect(n7 + 2, n6, 2, 4);
-                graphics.fillRect(n7 + 3, n6 + 3, 2, 2);
-            } else if (player.rotY >= 768 && player.rotY < 1280) {
-                graphics.fillRect(n7, n6, 1, 5);
-                graphics.fillRect(n7 + 1, n6 + 1, 2, 3);
-                graphics.fillRect(n7 + 3, n6 + 2, 2, 1);
-            } else if (player.rotY >= 1280 && player.rotY < 1792) {
-                graphics.fillRect(n7, n6 + 1, 1, 2);
-                graphics.fillRect(n7 + 1, n6 + 1, 1, 3);
-                graphics.fillRect(n7 + 2, n6 + 1, 2, 4);
-                graphics.fillRect(n7 + 3, n6, 2, 2);
-            } else if (player.rotY >= 1792 && player.rotY < 2304) {
-                graphics.fillRect(n7 + 2, n6, 1, 2);
-                graphics.fillRect(n7 + 1, n6 + 2, 3, 2);
-                graphics.fillRect(n7, n6 + 4, 5, 1);
-            } else if (player.rotY >= 2304 && player.rotY < 2816) {
-                graphics.fillRect(n7, n6, 2, 2);
-                graphics.fillRect(n7 + 1, n6 + 1, 2, 4);
-                graphics.fillRect(n7 + 3, n6 + 1, 1, 3);
-                graphics.fillRect(n7 + 4, n6 + 1, 1, 2);
-            } else if (player.rotY >= 2816 && player.rotY < 3328) {
-                graphics.fillRect(n7, n6 + 2, 2, 1);
-                graphics.fillRect(n7 + 2, n6 + 1, 2, 3);
-                graphics.fillRect(n7 + 4, n6, 1, 5);
-            } else {
-                graphics.fillRect(n7, n6 + 3, 2, 2);
-                graphics.fillRect(n7 + 1, n6, 2, 4);
-                graphics.fillRect(n7 + 3, n6 + 1, 1, 3);
-                graphics.fillRect(n7 + 4, n6 + 2, 1, 2);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_BLACK);
+                KFM_Renderer.DrawFilledRoundRect(45, 100, 150, 60);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                KFM_Renderer.DrawRoundRect(45, 100, 150, 60);
+
+                KFM_Renderer.DrawString("KEYS ARE USED", this.getWidth() / 2, 110, 1);
+                KFM_Renderer.DrawString("AUTOMATICALLY BY", this.getWidth() / 2, 125, 1);
+                KFM_Renderer.DrawString("PRESSING ACTION.", this.getWidth() / 2, 140, 1);
             }
         } 
     }
 
-    public void drawOver(Graphics graphics) {
-        if (this.m_scene == 2 && (this.m_mode == 0 || this.m_mode == 1)) {
-            if (this.m_player_damaged) {
-                graphics.setColor(this.RED);
+    public void drawOver(Graphics graphics) 
+    {
+        if (this.m_scene == 2 && (this.m_mode == 0 || this.m_mode == 1)) 
+        {
+            if (player.damageFrame) 
+            {
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_RED);
                 graphics.fillRect(0, 0, this.getWidth(), this.getHeight());
-                this.m_player_damaged = false;
+                player.damageFrame = false;
             }
-            if (this.m_comment_frame < 50) {
-                graphics.setColor(this.BLACK);
+
+            if (this.m_comment_frame < 50) 
+            {
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_BLACK);
                 graphics.fillRect(0, 215, this.getWidth(), 23);
-                graphics.setColor(this.WHITE);
-                this.setFont(graphics, this.m_font_small);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
                 ++this.m_comment_frame;
-                this.drawString(graphics, this.m_comment_text, this.getWidth() / 2, 220, 1);
-            } else if (this.m_add_comment) {
+                KFM_Renderer.DrawString(this.m_comment_text, this.getWidth() / 2, 220, 1);
+            } 
+            else if (this.m_add_comment) 
+            {
                 this.m_comment_frame = 0;
                 this.m_comment_text = this.m_add_comment_text;
                 this.m_add_comment = false;
             }
-        } else if (this.m_scene == 1) {
-            if (this.m_op_frame < 550) {
-                graphics.setColor(this.WHITE);
-                this.setFont(graphics, this.m_font_small);
-                this.drawString(graphics, "Presented by FromSoftware", this.getWidth() / 2, this.getHeight() / 2, 3);
-            } else if (this.m_op_frame <= 10 || this.m_op_frame >= 580) {
-                graphics.setColor(this.BLACK);
+        } 
+        else if (this.m_scene == 1) 
+        {
+            if (this.m_op_frame < 550) 
+            {
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+                KFM_Renderer.DrawString("Presented by FromSoftware", this.getWidth() / 2, this.getHeight() / 2, 3);
+            } 
+            else if (this.m_op_frame <= 10 || this.m_op_frame >= 580) 
+            {
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_BLACK);
                 graphics.fillRect(0, 0, this.getWidth(), this.getHeight());
-                graphics.setOrigin(0, -16);
-                this.drawImage(graphics, this.m_img_game_title, this.getWidth() / 2, 40, 1);
-                if (!this.m_starning) {
-                    graphics.setColor(this.WHITE);
-                    this.setFont(graphics, this.m_font_small);
-                    this.drawString(graphics, "NEW GAME ", this.getWidth() / 2, 150, 1);
-                    if (this.m_save_data < 2) {
-                        graphics.setColor(this.DARK);
-                    } else {
-                        graphics.setColor(this.WHITE);
-                    }
-                    this.drawString(graphics, "LOAD GAME", this.getWidth() / 2, 175, 1);
-                    if (this.m_save_data % 2 == 0) {
-                        graphics.setColor(this.DARK);
-                    } else {
-                        graphics.setColor(this.WHITE);
-                    }
-                    this.drawString(graphics, "CONTINUE ", this.getWidth() / 2, 200, 1);
-                    graphics.setColor(this.WHITE);
-                    this.drawImage(graphics, this.m_img_copyright, this.getWidth() / 2, 239, 33);
+                KFM_Renderer.SetOrigin(0, -16);
+                KFM_Renderer.DrawImage(this.m_img_game_title, this.getWidth() / 2, 40, 1);
+
+                if (!this.m_starning) 
+                {
+                    KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+
+                    KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                    KFM_Renderer.DrawString("NEW GAME ", this.getWidth() / 2, 150, 1);
+
+                    KFM_Renderer.SetColour(m_save_data < 2 ? KFM_Renderer.COLOUR_LTGREY : KFM_Renderer.COLOUR_WHITE);
+                    KFM_Renderer.DrawString("LOAD GAME", this.getWidth() / 2, 175, 1);
+
+                    KFM_Renderer.SetColour((m_save_data % 2) == 0 ? KFM_Renderer.COLOUR_LTGREY : KFM_Renderer.COLOUR_WHITE);
+                    KFM_Renderer.DrawString("CONTINUE ", this.getWidth() / 2, 200, 1);
+
+                    KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                    KFM_Renderer.DrawImage(this.m_img_copyright, this.getWidth() / 2, 239, 33);
                 }
-                graphics.setOrigin(0, 0);
+                KFM_Renderer.SetOrigin(0, 0);
             }
-        } else if (this.m_scene == 7) {
-            graphics.setColor(this.BLACK);
-            this.setFont(graphics, this.m_font_small);
+        } 
+        else if (this.m_scene == 7) 
+        {
+            KFM_Renderer.SetColour(KFM_Renderer.COLOUR_BLACK);
+            KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
             if (this.m_op_frame > 50 && this.m_op_frame < 100) {
-                this.drawString(graphics, "SKELETON KILLS: " + this.m_dead_count[0] + "", this.getWidth() / 2, this.getHeight() / 2, 1);
+                KFM_Renderer.DrawString("SKELETON KILLS: " + this.m_dead_count[0] + "", this.getWidth() / 2, this.getHeight() / 2, 1);
             } else if (this.m_op_frame > 120 && this.m_op_frame < 170) {
-                this.drawString(graphics, "HEAD EATER KILLS: " + this.m_dead_count[1] + "", this.getWidth() / 2, this.getHeight() / 2, 1);
+                KFM_Renderer.DrawString("HEAD EATER KILLS: " + this.m_dead_count[1] + "", this.getWidth() / 2, this.getHeight() / 2, 1);
             } else if (this.m_op_frame > 190 && this.m_op_frame < 240) {
-                this.drawString(graphics, "GOLEM KILLS: " + this.m_dead_count[2] + "", this.getWidth() / 2, this.getHeight() / 2, 1);
+                KFM_Renderer.DrawString("GOLEM KILLS: " + this.m_dead_count[2] + "", this.getWidth() / 2, this.getHeight() / 2, 1);
             } else if (this.m_op_frame > 260 && this.m_op_frame < 310) {
-                this.drawString(graphics, "DEATH FIGHTER KILLS: " + this.m_dead_count[3] + "", this.getWidth() / 2, this.getHeight() / 2, 1);
+                KFM_Renderer.DrawString("DEATH FIGHTER KILLS: " + this.m_dead_count[3] + "", this.getWidth() / 2, this.getHeight() / 2, 1);
             } else if (this.m_op_frame > 330 && this.m_op_frame < 380) {
-                this.drawString(graphics, "TOTAL KILLS: " + this.m_dead_all + "", this.getWidth() / 2, this.getHeight() / 2, 1);
+                KFM_Renderer.DrawString("TOTAL KILLS: " + this.m_dead_all + "", this.getWidth() / 2, this.getHeight() / 2, 1);
             } else if (this.m_op_frame > 400 && this.m_op_frame < 450) {
-                this.drawString(graphics, "CHEST COMPLETION: " + this.m_getper_box + "%", this.getWidth() / 2, this.getHeight() / 2, 1);
+                KFM_Renderer.DrawString("CHEST COMPLETION: " + this.m_getper_box + "%", this.getWidth() / 2, this.getHeight() / 2, 1);
             } else if (this.m_op_frame > 470 && this.m_op_frame < 520) {
-                this.drawString(graphics, "ITEM COMPLETION : " + this.m_getper_taru + "%", this.getWidth() / 2, this.getHeight() / 2, 1);
+                KFM_Renderer.DrawString("ITEM COMPLETION : " + this.m_getper_taru + "%", this.getWidth() / 2, this.getHeight() / 2, 1);
             } else if (this.m_ending_count == 100 && (this.m_op_frame < 10 || this.m_op_frame >= 600)) {
-                graphics.setColor(this.WHITE);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
                 graphics.fillRect(0, 0, this.getWidth(), this.getHeight());
             } else if (this.m_ending_count > 100) {
-                graphics.setColor(this.WHITE);
-                this.setFont(graphics, this.m_font_small);
-                this.drawString(graphics, "End", this.getWidth() / 2, this.getHeight() / 2, 1);
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+                KFM_Renderer.DrawString("End", this.getWidth() / 2, this.getHeight() / 2, 1);
             }
-        } else if (this.m_scene == 3) {
-            graphics.setColor(this.BLACK);
+        } 
+        else if (this.m_scene == 3) 
+        {
+            KFM_Renderer.SetColour(KFM_Renderer.COLOUR_BLACK);
             graphics.fillRect(0, this.getHeight() / 2 - 25, 240, 50);
-            graphics.setColor(this.WHITE);
-            this.setFont(graphics, this.m_font_default);
-            this.drawString(graphics, "GAME OVER", this.getWidth() / 2, this.getHeight() / 2 - 10, 3);
-        } else if (this.m_scene == 5) {
-            if (this.m_step_No == 0) {
-                graphics.setColor(this.BLACK);
+            KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+            KFM_Renderer.SetFont(KFM_Renderer.FONT_DEFAULT);
+            KFM_Renderer.DrawString("GAME OVER", this.getWidth() / 2, this.getHeight() / 2 - 10, 3);
+        } 
+        else if (this.m_scene == 5) 
+        {
+            if (this.m_step_No == 0) 
+            {
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_BLACK);
                 graphics.fillRect(0, 0, this.getWidth(), this.getHeight());
-            } else if (this.m_y == 0) {
-                if (this.m_warp > 15 && this.m_warp < 25) {
-                    graphics.setColor(this.BLACK);
+            } 
+            else if (this.m_y == 0) 
+            {
+                if (this.m_warp > 15 && this.m_warp < 25) 
+                {
+                    KFM_Renderer.SetColour(KFM_Renderer.COLOUR_BLACK);
                     graphics.fillRect(0, 0, this.getWidth(), this.getHeight());
                 }
-            } else if (this.m_warp > 70 && this.m_warp < 90) {
-                graphics.setColor(this.BLACK);
+            } 
+            else if (this.m_warp > 70 && this.m_warp < 90) 
+            {
+                KFM_Renderer.SetColour(KFM_Renderer.COLOUR_BLACK);
                 graphics.fillRect(0, 0, this.getWidth(), this.getHeight());
-                if (this.m_saving) {
-                    this.setFont(graphics, this.m_font_small);
-                    graphics.setColor(this.WHITE);
-                    this.drawString(graphics, "SAVING...", this.getWidth() / 2, this.getHeight() / 2 - 30, 1);
-                    this.drawString(graphics, "WAIT UNTIL SAVE IS", this.getWidth() / 2, this.getHeight() / 2, 1);
-                    this.drawString(graphics, "COMPLETE BEFORE EXITING!", this.getWidth() / 2, this.getHeight() / 2 + 30, 1);
+                if (this.m_saving) 
+                {
+                    KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+                    KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+                    KFM_Renderer.DrawString("SAVING...", this.getWidth() / 2, this.getHeight() / 2 - 30, 1);
+                    KFM_Renderer.DrawString("WAIT UNTIL SAVE IS", this.getWidth() / 2, this.getHeight() / 2, 1);
+                    KFM_Renderer.DrawString("COMPLETE BEFORE EXITING!", this.getWidth() / 2, this.getHeight() / 2 + 30, 1);
                 }
             }
-        } else if (this.m_scene == 6) {
-            graphics.setColor(this.BLACK);
+        } 
+        else if (this.m_scene == 6) 
+        {
+            KFM_Renderer.SetColour(KFM_Renderer.COLOUR_BLACK);
             graphics.fillRect(0, 0, this.getWidth(), this.getHeight());
-            this.setFont(graphics, this.m_font_small);
-            graphics.setColor(this.WHITE);
-            if (this.m_scene == 6) {
-                this.drawString(graphics, "SAVE GAME?", this.getWidth() / 2, 85, 1);
-            }
-            this.drawString(graphics, "YES", this.getWidth() / 2, 147, 1);
-            this.drawString(graphics, "NO", this.getWidth() / 2, 177, 1);
+            KFM_Renderer.SetFont(KFM_Renderer.FONT_SMALL);
+            KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
+            KFM_Renderer.DrawString("SAVE GAME?", this.getWidth() / 2, 85, 1);
+            KFM_Renderer.DrawString("YES", this.getWidth() / 2, 147, 1);
+            KFM_Renderer.DrawString("NO", this.getWidth() / 2, 177, 1);
         }
     }
 
@@ -5417,11 +5534,12 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
             bl = true;
         }
         if (bl) {
-            this.drawImage(graphics, this.m_img_cursor, this.m_cursor_pos[this.m_cursor_place][this.m_cursor_now % 10][0], this.m_cursor_pos[this.m_cursor_place][this.m_cursor_now % 10][1], 20);
+            KFM_Renderer.DrawImage(this.m_img_cursor, this.m_cursor_pos[this.m_cursor_place][this.m_cursor_now % 10][0], this.m_cursor_pos[this.m_cursor_place][this.m_cursor_now % 10][1], 20);
         }
     }
 
-    private synchronized void directAttack(int n, int n2) {
+    private synchronized void directAttack(int n, int n2) 
+    {
         int n3;
         int n4;
         int n5;
@@ -5466,7 +5584,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
         this.m_at_frame = this.m_at_limit;
         this.attackSetting();
-        this.m_player_damaged = true;
+        player.damageFrame = true;
         player.posX += Math.sin(this.m_enemy[n][3]) * 200 / 4096;
         player.posZ += Math.cos(this.m_enemy[n][3]) * 200 / 4096;
         int[] nArray = this.m_enemy[n];
@@ -5479,27 +5597,30 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         if (n3 <= 0) {
             n3 = 1;
         }
-        if (!this.m_nodamage) {
+
+        int statusRoll = (this.m_rand.nextInt() >>> 1) % 10;
+
+        if (!this.m_nodamage) 
+        {
+            // Apply damage to the player
             player.currentHP -= n3;
-        }
-        int n4 = (this.m_rand.nextInt() >>> 1) % 10;
-        if (!this.m_nodamage && n4 < 3) {
-            if (this.m_enemyID_addi[this.m_enemy[n][4]] != 0 && this.m_enemyID_addi[this.m_enemy[n][4]] % 2 == 0) {
-                this.m_player_condi[0][0] = 1;
+
+            // Add Status to the player.
+            if (statusRoll < 3)
+            {
+                if (this.m_enemyID_addi[this.m_enemy[n][4]] != 0 && this.m_enemyID_addi[this.m_enemy[n][4]] % 2 == 0) 
+                    player.AddStatus(KFM_Player.COND_POISON);
+
+                if (this.m_enemyID_addi[this.m_enemy[n][4]] != 0 && this.m_enemyID_addi[this.m_enemy[n][4]] % 3 == 0) 
+                    player.AddStatus(KFM_Player.COND_PARALYZE);
+
+                if (this.m_enemyID_addi[this.m_enemy[n][4]] != 0 && this.m_enemyID_addi[this.m_enemy[n][4]] % 5 == 0) 
+                    player.AddStatus(KFM_Player.COND_DARK);
+
+                if (this.m_enemyID_addi[this.m_enemy[n][4]] != 0 && this.m_enemyID_addi[this.m_enemy[n][4]] % 7 == 0) 
+                    player.AddStatus(KFM_Player.COND_CURSE);
             }
-            if (this.m_enemyID_addi[this.m_enemy[n][4]] != 0 && this.m_enemyID_addi[this.m_enemy[n][4]] % 3 == 0) {
-                this.m_player_condi[1][0] = 1;
-                this.m_view_step = 25;
-                this.m_view_rot = 10;
-            }
-            if (this.m_enemyID_addi[this.m_enemy[n][4]] != 0 && this.m_enemyID_addi[this.m_enemy[n][4]] % 5 == 0) {
-                this.m_player_condi[2][0] = 1;
-                this.m_view_area = 3;
-                this.viewWaterArea();
-            }
-            if (this.m_enemyID_addi[this.m_enemy[n][4]] != 0 && this.m_enemyID_addi[this.m_enemy[n][4]] % 7 == 0) {
-                this.m_player_condi[3][0] = 1;
-            }
+
         }
     }
 
@@ -5695,67 +5816,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.FPS_timePast = System.currentTimeMillis();
     }
 
-    public synchronized void processEvent(int n, int n2) {
-        if (n == 0 && n2 == 21 && this.m_scene == 2) {
-            if (this.m_mode == 0 || this.m_mode == 5 || this.m_mode == 7 || this.m_mode == 9 || this.m_mode == 11 || this.m_mode == 13 || this.m_mode == 15 || this.m_mode == 16) {
-                this.m_mode = (byte)6;
-                this.m_cursor_place = 1;
-                this.m_cursor_now = 0;
-            } else if (this.m_mode == 6) {
-                this.m_mode = 0;
-            } else if (this.m_mode == 8 || this.m_mode == 14) {
-                this.m_mode = (byte)7;
-                this.m_cursor_place = (byte)2;
-                this.m_cursor_now = 0;
-            } else if (this.m_mode == 10) {
-                this.m_mode = (byte)9;
-                this.m_cursor_place = (byte)4;
-                this.m_cursor_now = 0;
-            }
-            if (this.m_mode == 0) {
-                SoftLablesSet(2, 3);
-            } else {
-                if (this.m_mode != 2 && (this.m_mode == 6 || this.m_mode == 9 || this.m_mode == 7)) {
-                    SoftLablesSet(4, 0);
-                }
-            }
-            this.m_set_flag = false;
-            this.m_paint_flag = true;
-        }
-        if (n == 0 && n2 == 22) {
-            if (this.m_scene == 3 || this.m_scene == 7 && this.m_ending_count == 130) {
-                this.m_cursor_place = 0;
-                this.m_cursor_now = 0;
-                this.m_scene = 1;
-                this.checkTitle();
-                this.openingStart();
-                this.m_op_frame = 580;
-                SoftLabelsClear();
-                this.m_ending = false;
-                this.m_ending_count = 0;
-                this.m_cursor_now = 0;
-                this.m_comment_frame = 50;
-                this.m_add_comment = false;
-                for (int i = 0; i < 4; ++i) {
-                    this.m_player_condi[i][0] = 0;
-                    this.m_player_condi[i][1] = 0;
-                }
-                this.m_option[0] = false;
-                this.m_option[1] = false;
-                this.m_option[2] = true;
-                this.m_option[3] = false;
-            } else if (this.m_scene == 2 && this.m_mode == 0 && player.currentWeaponID != 40 && this.m_at_frame == this.m_at_limit && this.m_player_condi[3][0] == 0) {
-                this.m_at_ok = true;
-                if (this.m_option[1]) {
-                    this.m_J_se.playMMF(4);
-                }
-                this.m_at_frame = 0;
-                this.m_gauge_attack = this.m_gauge_value;
-                this.m_gauge_value = 0;
-            }
-        }
-    }
-
     private void SoftLabelsClear() 
     {
         this.setSoftLabel(0, "");
@@ -5764,8 +5824,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
 
     private void SoftLablesSet(int soft1, int soft2) 
     {
-        this.setSoftLabel(0, KingsField_Text.Commands[soft1]);
-        this.setSoftLabel(1, KingsField_Text.Commands[soft2]);
+        this.setSoftLabel(0, KFM_Text.Commands[soft1]);
+        this.setSoftLabel(1, KFM_Text.Commands[soft2]);
     }
 
     private void readResource(byte by, byte by2) {
@@ -6185,9 +6245,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         catch (Exception exception) {
             KingsField_P6Canvas.Print("figure read ; error");
         }
-    }
-
-    public synchronized void mediaAction(MediaPresenter mediaPresenter, int n, int n2) {
     }
 }
  

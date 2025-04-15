@@ -2,7 +2,7 @@
 /** 
  * Used to store a hint. 
 **/
-public class KingsField_Hint 
+public class KFM_Hint 
 {
     /**
      * Lines of text which make up the hint. 
@@ -10,7 +10,7 @@ public class KingsField_Hint
     public final String[] Lines;
     public final int Colour = 0xFFFFFF;
 
-    public KingsField_Hint(String[] lines)
+    public KFM_Hint(String[] lines)
     {
         Lines = lines;
     }
