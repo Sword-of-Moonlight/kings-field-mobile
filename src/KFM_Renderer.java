@@ -1,4 +1,5 @@
 import com.nttdocomo.opt.ui.j3d.AffineTrans;
+import com.nttdocomo.opt.ui.j3d.Figure;
 import com.nttdocomo.opt.ui.j3d.Graphics3D;
 import com.nttdocomo.opt.ui.j3d.PrimitiveArray;
 import com.nttdocomo.opt.ui.j3d.Texture;
@@ -111,9 +112,17 @@ public final class KFM_Renderer
         graphics2D.fillRect(x, y, w, h);
     }
 
+    /**
+     * Renders an array of primitives inside a PrimitiveArrayObject
+    **/
     public static void DrawPrimitiveArray(PrimitiveArray primitives, int n1)
     {
         graphics3D.renderPrimitives(primitives, n1);
+    }
+
+    public static void DrawFigure(Figure figure)
+    {
+        graphics3D.renderFigure(figure);
     }
 
     /**

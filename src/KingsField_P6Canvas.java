@@ -243,7 +243,7 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
     final int under;
     final int floor;
     final int above;
-    private int[] m_poly_num = new int[4];
+    private int[]   m_poly_num = new int[4];
     private int[][] m_poly_ver = new int[4][2400];
     private int[][] m_poly_nor = new int[4][600];
     private int[][] m_uv = new int[4][1600];
@@ -546,15 +546,15 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.drawFloor();
         this.drawAbove();
 
-        this.drawStatue(KFM_Renderer.GetGraphics3D());
-        this.drawBox(KFM_Renderer.GetGraphics3D());
-        this.drawTaru(KFM_Renderer.GetGraphics3D());
-        this.drawItem(KFM_Renderer.GetGraphics3D());
+        this.drawStatue();
+        this.drawBox();
+        this.drawTaru();
+        this.drawItem();
         this.drawEnemy(KFM_Renderer.GetGraphics3D());
-        this.drawWarp(KFM_Renderer.GetGraphics3D());
+        this.drawWarp();
 
         if (this.m_scene == 2 && this.m_at_frame > 0 && this.m_at_frame < this.m_at_limit) 
-            this.drawWeapon(KFM_Renderer.GetGraphics3D());
+            this.drawWeapon();
 
         this.drawBackcover(KFM_Renderer.GetGraphics3D());
         if (this.m_mode == 2)
@@ -574,16 +574,15 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
 
             KFM_Renderer.SetOrigin(0, -16);
             this.DrawUI(KFM_Renderer.GetGraphics2D());
-            this.drawCursor(KFM_Renderer.GetGraphics2D());
+            drawCursor();
             KFM_Renderer.SetOrigin(0, 0);
         } 
         else 
         {
             if (this.m_scene != 1 && this.m_scene != 7) 
-            {
                 this.drawParameter(KFM_Renderer.GetGraphics2D());
-            }
-            this.drawCursor(KFM_Renderer.GetGraphics2D());
+
+            drawCursor();
         }
 
         KFM_Renderer.Flush();
@@ -653,7 +652,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void drawAbove() {
+    private void drawAbove() 
+    {
         try 
         {
             if (this.m_poly_num[2] > 0) 
@@ -678,6 +678,250 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         catch (Exception exception) 
         {
             KingsField_P6Canvas.Print("drawStage render: " + exception + "---error");
+        }
+    }
+
+    private void drawWeapon() 
+    {
+        try 
+        {
+            KFM_Renderer.SetViewMatrix(m_wep_trans);
+
+            int n = player.currentWeaponID <= 4 ? 262144 : (player.currentWeaponID <= 9 ? 131072 : 0);
+            this.m_wep_fig.setPosture(this.m_wep_act, 0, n);
+
+            KFM_Renderer.DrawFigure(m_wep_fig);
+            KFM_Renderer.DrawFigure(m_wep_fig);
+        }
+        catch (Exception exception) 
+        {
+            Print("Weapon & Hand error");
+        }
+    }
+
+    private void drawStatue() 
+    {
+        if (this.m_player_area[this.m_statue]) 
+        {
+            try 
+            {
+                KFM_Renderer.SetViewMatrix(m_statue_trans);
+                KFM_Renderer.DrawFigure(m_statue_fig);
+            }
+            catch (Exception exception) 
+            {
+                KingsField_P6Canvas.Print("The statue of Liberty!");
+            }
+        }
+    }
+
+    private void drawBox() 
+    {
+        try 
+        {
+            for (int i = 0; i < this.m_box_num; ++i) 
+            {
+                if (!this.m_player_area[this.m_box[i][0]]) continue;
+
+                KFM_Renderer.SetViewMatrix(m_box_trans[i]);
+
+                // HIGH LOD
+                if (!this.m_box_flag[this.m_box_number[this.m_stage_ID] + i]) 
+                {
+                    this.m_box_near_fig.setPosture(this.m_box_near_act, 1, 0);
+                    KFM_Renderer.DrawFigure(m_box_near_fig);
+                    continue;
+                }
+
+                if (this.m_mode == 1 && i == this.m_openbox) 
+                {
+                    this.m_box_near_fig.setPosture(this.m_box_near_act, 0, this.m_box_frame);
+                    KFM_Renderer.DrawFigure(m_box_near_fig);
+                    continue;
+                }
+
+                // LOW LOD
+                KFM_Renderer.DrawFigure(m_box_far_fig);
+            }
+        }
+        catch (Exception exception) 
+        {
+            Print("box error!");
+        }
+    }
+
+    private void drawTaru() 
+    {
+        
+        try 
+        {
+            for (int i = 0; i < this.m_taru_num; ++i) 
+            {
+                if (!this.m_player_area[this.m_taru[i]]) continue;
+
+                KFM_Renderer.SetViewMatrix(m_taru_trans[i]);
+                KFM_Renderer.DrawFigure(m_taru_fig);
+            }
+        }
+        catch (Exception exception) 
+        {
+            Print("taru error");
+        }
+    }
+
+    private void drawItem() 
+    {
+        if (this.m_item_id >= 0 && this.m_player_area[this.m_item_grid] && this.m_item_id >= 0 && this.m_player_area[this.m_item_grid]) 
+        {
+            try 
+            {
+                KFM_Renderer.SetViewMatrix(m_item_trans);
+                if (this.m_item_id <= 14) 
+                {
+                    this.m_item_fig.setPosture(this.m_wep_act, 0, 393216);
+                    KFM_Renderer.DrawFigure(m_item_fig);
+                } 
+                else 
+                {
+                    this.m_item_fig.setPosture(this.m_wep_act, 0, 262144);
+                    KFM_Renderer.DrawFigure(m_item_fig);
+
+                    if (this.m_item_id >= 25 && this.m_item_id <= 34) 
+                    {
+                        KFM_Renderer.SetViewMatrix(m_item_trans2);
+                        KFM_Renderer.DrawFigure(m_item_fig);
+                    }
+                }
+            }
+            catch (Exception exception) 
+            {
+                KingsField_P6Canvas.Print("item draw error");
+            }
+        }
+    }
+
+    private void drawEnemy(Graphics3D graphics3D) {
+        for (int i = 0; i < this.m_enemy_num; ++i) 
+        {
+            if (this.m_enemy[i][10] != 0 && this.m_enemy[i][10] != 2) continue;
+            this.i_g3d.setViewTrans(this.m_enemy_trans[i]);
+            int n = this.m_enemy[i][4] / 5;
+            try {
+                boolean bl = false;
+                if (this.m_enemy[i][7] == 7) {
+                    bl = true;
+                } else if (this.m_enemy[i][7] == 5 && n == 0) {
+                    bl = true;
+                }
+                if (bl) {
+                    this.m_fig[n].setPosture(this.m_act[n], 2, this.m_enemy[i][8]);
+                    this.i_g3d.renderFigure(this.m_fig[n]);
+                    continue;
+                }
+                this.m_fig[n].setPosture(this.m_act[n], this.m_enemy[i][7], this.m_enemy[i][8]);
+                this.i_g3d.renderFigure(this.m_fig[n]);
+                continue;
+            }
+            catch (Exception exception) {
+                KingsField_P6Canvas.Print("drawEnemy error : " + i + ", " + " a=" + n + ", behv=" + this.m_enemy[i][7] + "frame" + this.m_enemy[i][8]);
+            }
+        }
+    }
+
+    private void drawWarp() 
+    {
+        boolean drawWarp  = (this.m_mode == 3);
+                drawWarp |= this.m_player_area[this.m_start_grid];
+                drawWarp |= this.m_player_area[this.m_goal_grid] & !this.m_boss_live;
+
+        if (!drawWarp)
+            return;
+        
+        KFM_Renderer.SetViewMatrix(m_warp_trans);
+        KFM_Renderer.DrawFigure(m_warp_fig);
+    }
+
+    private void drawBackcover(Graphics3D graphics3D) {
+        PrimitiveArray primitiveArray = new PrimitiveArray(4, 1536, 1);
+        if (this.m_mode >= 4) {
+            if (this.m_black == 0) {
+                this.m_black = 1;
+            }
+            try {
+                for (int i = 0; i < this.m_cover_num; ++i) {
+                    int n;
+                    int[] nArray = primitiveArray.getVertexArray();
+                    for (n = 0; n < 12; ++n) {
+                        nArray[n] = this.m_cover_ver[i][n];
+                    }
+                    int[] nArray2 = primitiveArray.getNormalArray();
+                    for (n = 0; n < 3; ++n) {
+                        nArray2[n] = this.m_cover_nor[n];
+                    }
+                    int[] nArray3 = primitiveArray.getColorArray();
+                    for (n = 0; n < 1; ++n) {
+                        nArray3[n] = this.m_cover_colors[0] == this.BLACK ? 0 : (this.m_cover_colors[0] == this.WHITE ? 0xFFFFFF : this.m_cover_colors[0]);
+                    }
+                    this.i_g3d.setViewTrans(this.m_trans);
+                    this.i_g3d.renderPrimitives(primitiveArray, 32);
+                }
+            }
+            catch (Exception exception) {
+                KingsField_P6Canvas.Print("BackCover0 error");
+            }
+        } else if (this.m_scene == 1 || this.m_scene == 7) {
+            try {
+                for (int i = 0; i < this.m_cover_num; ++i) {
+                    int n;
+                    int[] nArray = primitiveArray.getVertexArray();
+                    for (n = 0; n < 12; ++n) {
+                        nArray[n] = this.m_cover_ver[i][n];
+                    }
+                    int[] nArray4 = primitiveArray.getNormalArray();
+                    for (n = 0; n < 3; ++n) {
+                        nArray4[n] = this.m_cover_nor[n];
+                    }
+                    int[] nArray5 = primitiveArray.getColorArray();
+                    for (n = 0; n < 1; ++n) {
+                        nArray5[n] = this.m_cover_colors[0] == this.BLACK ? 0 : (this.m_cover_colors[0] == this.WHITE ? 0xFFFFFF : this.m_cover_colors[0]);
+                    }
+                    this.i_g3d.setViewTrans(this.m_trans);
+                    this.i_g3d.renderPrimitives(primitiveArray, 32);
+                }
+            }
+            catch (Exception exception) {
+                KingsField_P6Canvas.Print("BackCover0 error");
+            }
+        } else {
+            this.m_black = 0;
+        }
+    }
+
+    private void drawShutter(Graphics3D graphics3D) {
+        try {
+            if (this.m_poly_num[3] > 0) {
+                int n;
+                PrimitiveArray primitiveArray = new PrimitiveArray(4, 12800, this.m_poly_num[3]);
+                int[] nArray = primitiveArray.getVertexArray();
+                for (n = 0; n < this.m_poly_num[3] * 12; ++n) {
+                    nArray[n] = this.m_poly_ver[3][n];
+                }
+                int[] nArray2 = primitiveArray.getNormalArray();
+                for (n = 0; n < this.m_poly_num[3] * 3; ++n) {
+                    nArray2[n] = this.m_poly_nor[3][n];
+                }
+                int[] nArray3 = primitiveArray.getTextureCoordArray();
+                for (n = 0; n < this.m_poly_num[3] * 8; ++n) {
+                    nArray3[n] = this.m_uv[3][n];
+                }
+                this.i_g3d.setViewTrans(this.m_trans);
+                this.i_g3d.setPrimitiveTextureArray(this.m_poly_tex);
+                this.i_g3d.setPrimitiveTexture(0);
+                this.i_g3d.renderPrimitives(primitiveArray, 16);
+            }
+        }
+        catch (Exception exception) {
+            KingsField_P6Canvas.Print("drawShutter render: " + exception + "---error");
         }
     }
 
@@ -3366,9 +3610,11 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void posThroughBack() {
+    private void posThroughBack() 
+    {
         int n = player.rotY;
-        for (int i = 0; i < this.m_cover_num; ++i) {
+        for (int i = 0; i < this.m_cover_num; ++i)
+        {
             int n2 = player.rotX + 768;
             int n3 = player.rotX - 768;
             int n4 = Math.sin(n - 1024) * 2000 / 4096;
@@ -3385,61 +3631,63 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
+
     private synchronized void viewWaterArea() 
     {
         int n;
-        for (int i = 0; i < this.m_grid_all; ++i) {
+        for (int i = 0; i < this.m_grid_all; ++i) 
             this.m_player_area[i] = false;
-        }
+
         this.m_grid_start_num = new int[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         this.m_grid_start[0][0] = this.m_player_grid;
         this.m_player_area[this.m_player_grid] = true;
-        boolean bl = false;
         int n2 = 0;
-        boolean bl2 = false;
-        boolean bl3 = true;
-        boolean bl4 = true;
-        for (n = 0; n < 4; ++n) {
+
+        // Clear out the current poly counts...
+        for (n = 0; n < 4; ++n) 
             this.m_poly_num[n] = 0;
-        }
-        for (n = 0; n < player.viewDistance * 2 + 1; ++n) {
-            for (int i = 0; i < this.m_grid_start_num[n]; ++i) {
-                int n3;
+
+        for (n = 0; n < player.viewDistance * 2 + 1; ++n) 
+        {
+            for (int i = 0; i < this.m_grid_start_num[n]; ++i) 
+            {
                 n2 = this.m_grid_start[n][i];
-                if (this.m_player_dire == 0 || this.m_player_dire == 2) {
-                    if (n2 % this.m_grid_x >= this.m_player_grid % this.m_grid_x) {
+                if (this.m_player_dire == 0 || this.m_player_dire == 2) 
+                {
+                    if (n2 % this.m_grid_x >= this.m_player_grid % this.m_grid_x)
                         this.makeSideX(n2, 1, n);
-                    }
-                    if (n2 % this.m_grid_x <= this.m_player_grid % this.m_grid_x) {
+
+                    if (n2 % this.m_grid_x <= this.m_player_grid % this.m_grid_x)
                         this.makeSideX(n2, 0, n);
-                    }
-                    if (this.m_player_dire == 0) {
+
+                    // The Direction of the player...
+                    if (this.m_player_dire == 0)
                         this.makeSideZ(n2, 3, n);
-                    } else {
+                    else
                         this.makeSideZ(n2, 2, n);
-                    }
-                } else {
-                    if (n2 / this.m_grid_x >= this.m_player_grid / this.m_grid_x) {
+                } 
+                else 
+                {
+                    if (n2 / this.m_grid_x >= this.m_player_grid / this.m_grid_x) 
                         this.makeSideZ(n2, 3, n);
-                    }
-                    if (n2 / this.m_grid_x <= this.m_player_grid / this.m_grid_x) {
+
+                    if (n2 / this.m_grid_x <= this.m_player_grid / this.m_grid_x) 
                         this.makeSideZ(n2, 2, n);
-                    }
-                    if (this.m_player_dire == 1) {
+
+                    if (this.m_player_dire == 1) 
                         this.makeSideX(n2, 1, n);
-                    } else {
+                    else 
                         this.makeSideX(n2, 0, n);
-                    }
                 }
-                if (this.m_block_exist[n2] <= 3) {
-                    n3 = this.m_block_exist[n2] == 3 ? 1200 : 2400;
-                    this.makePolygonFlat(n2, n3);
-                }
-                if (this.m_block_level[n2] == 0 || this.m_block_level[n2] == -200) {
-                    n3 = this.m_block_level[n2] == 0 ? 0 : -200;
-                    this.makePolygonFlat(n2, n3);
-                }
+
+                if (m_block_exist[n2] <= 3) // ceiling...
+                    makePolygonFlat(n2, m_block_exist[n2] == 3 ? 1200 : 2400);
+
+                if (m_block_level[n2] == 0 || m_block_level[n2] == -200) // Level for water or floor
+                    makePolygonFlat(n2, m_block_level[n2]);
+                
                 if (this.m_mode == 3 || n2 != this.m_start_grid && n2 != this.m_goal_grid) continue;
+
                 this.m_warp_posX = n2 % this.m_grid_x * 1000 + 500;
                 this.m_warp_posY = 0;
                 this.m_warp_posZ = n2 / this.m_grid_x * 1000 + 500;
@@ -3533,63 +3781,97 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void makePolygonFlat(int n, int n2) {
-        int n3;
-        int n4;
-        int n5;
+    /**
+     * Used to create flat polygon. For the floors and ceilings?
+    **/
+    public void makePolygonFlat(int tile1D, int yPosition) 
+    {
+        int uvDiv;
+        int vertDiv;
+        int subdivs;    // The amount of times to divide a quad
         int n6;
-        int n7;
-        int n8 = this.gridDistance(n, this.m_player_grid, 0);
-        int n9 = 1000 * (n % this.m_grid_x);
-        int n10 = 1000 * (n / this.m_grid_x);
-        if (n2 == -200) {
-            n7 = 0;
+        int surface;    // UNDER, FLOOR, CEILING, SHUTTER ??
+
+        int n8 = this.gridDistance(tile1D, this.m_player_grid, 0);
+        int xBase = 1000 * (tile1D % this.m_grid_x);  // X Base for Tile
+        int zBase = 1000 * (tile1D / this.m_grid_x);  // Z Base for Tile
+
+        if (yPosition == -200)      // Add to 'UNDER' layer (water)
+        {
+            surface = 0;
             n6 = 7;
-        } else if (n2 == 0) {
-            n7 = 1;
-            n6 = n == this.m_start_grid || n == this.m_goal_grid ? 6 : (player.status[KFM_Player.COND_DARK] >= 0 ? n8 : n8 - 3);
-        } else {
-            n7 = 2;
+        } 
+        else if (yPosition == 0)    // Add to 'FLOOR' layer (floor)
+        {
+            surface = 1;
+            n6 = tile1D == this.m_start_grid || tile1D == this.m_goal_grid ? 6 : (player.status[KFM_Player.COND_DARK] >= 0 ? n8 : n8 - 3);
+        } 
+        else                        // Add to 'ABOVE' layer (ceiling)
+        {
+            surface = 2;
             n6 = player.status[KFM_Player.COND_DARK] >= 0 ? n8 : n8 - 3;
         }
-        if (n6 < 0) {
+
+        if (n6 < 0) 
             n6 = 0;
+
+        if (this.m_shutter_draw) 
+            surface = 3;
+
+        if (n8 <= 1) // The closest area surrounding the player is rendered in higher quality
+        {
+            subdivs = 4;
+            vertDiv = 500;
+            uvDiv   = 31;
         }
-        if (this.m_shutter_draw) {
-            n7 = 3;
+        else 
+        {
+            subdivs = 1;
+            vertDiv = 1000;
+            uvDiv = 63;
         }
-        if (n8 <= 1) {
-            n5 = 4;
-            n4 = 500;
-            n3 = 31;
-        } else {
-            n5 = 1;
-            n4 = 1000;
-            n3 = 63;
-        }
-        for (int i = 0; i < n5; ++i) {
-            this.m_poly_ver[n7][this.m_poly_num[n7] * 12 + 0] = n9 + i % 2 * n4;
-            this.m_poly_ver[n7][this.m_poly_num[n7] * 12 + 1] = n2;
-            this.m_poly_ver[n7][this.m_poly_num[n7] * 12 + 2] = n10 + i / 2 * n4;
-            this.m_poly_ver[n7][this.m_poly_num[n7] * 12 + 3] = n9 + (i % 2 + 1) * n4;
-            this.m_poly_ver[n7][this.m_poly_num[n7] * 12 + 4] = n2;
-            this.m_poly_ver[n7][this.m_poly_num[n7] * 12 + 5] = n10 + i / 2 * n4;
-            this.m_poly_ver[n7][this.m_poly_num[n7] * 12 + 6] = n9 + (i % 2 + 1) * n4;
-            this.m_poly_ver[n7][this.m_poly_num[n7] * 12 + 7] = n2;
-            this.m_poly_ver[n7][this.m_poly_num[n7] * 12 + 8] = n10 + (i / 2 + 1) * n4;
-            this.m_poly_ver[n7][this.m_poly_num[n7] * 12 + 9] = n9 + i % 2 * n4;
-            this.m_poly_ver[n7][this.m_poly_num[n7] * 12 + 10] = n2;
-            this.m_poly_ver[n7][this.m_poly_num[n7] * 12 + 11] = n10 + (i / 2 + 1) * n4;
-            this.m_uv[n7][this.m_poly_num[n7] * 8 + 0] = this.m_uv_corner[n6][0] + i % 2 * 32;
-            this.m_uv[n7][this.m_poly_num[n7] * 8 + 1] = this.m_uv_corner[n6][1] + i / 2 * 32;
-            this.m_uv[n7][this.m_poly_num[n7] * 8 + 2] = this.m_uv_corner[n6][0] + i % 2 * 32 + n3;
-            this.m_uv[n7][this.m_poly_num[n7] * 8 + 3] = this.m_uv_corner[n6][1] + i / 2 * 32;
-            this.m_uv[n7][this.m_poly_num[n7] * 8 + 4] = this.m_uv_corner[n6][0] + i % 2 * 32 + n3;
-            this.m_uv[n7][this.m_poly_num[n7] * 8 + 5] = this.m_uv_corner[n6][1] + i / 2 * 32 + n3;
-            this.m_uv[n7][this.m_poly_num[n7] * 8 + 6] = this.m_uv_corner[n6][0] + i % 2 * 32;
-            this.m_uv[n7][this.m_poly_num[n7] * 8 + 7] = this.m_uv_corner[n6][1] + i / 2 * 32 + n3;
-            int n11 = n7;
-            this.m_poly_num[n11] = this.m_poly_num[n11] + 1;
+
+        for (int i = 0; i < subdivs; ++i) // Sub divisions?..
+        {
+            int uvID = 8  * m_poly_num[surface];
+            int vtID = 12 * m_poly_num[surface];
+
+            // VERTICES
+            int x1 = vertDiv * ((i % 2) + 0);
+            int x2 = vertDiv * ((i % 2) + 1);
+            int z1 = vertDiv * ((i / 2) + 0);
+            int z2 = vertDiv * ((i / 2) + 1);
+
+            this.m_poly_ver[surface][vtID + 0]  = xBase + x1;
+            this.m_poly_ver[surface][vtID + 1]  = yPosition;
+            this.m_poly_ver[surface][vtID + 2]  = zBase + z1;
+            this.m_poly_ver[surface][vtID + 3]  = xBase + x2;
+            this.m_poly_ver[surface][vtID + 4]  = yPosition;
+            this.m_poly_ver[surface][vtID + 5]  = zBase + z1;
+            this.m_poly_ver[surface][vtID + 6]  = xBase + x2;
+            this.m_poly_ver[surface][vtID + 7]  = yPosition;
+            this.m_poly_ver[surface][vtID + 8]  = zBase + z2;
+            this.m_poly_ver[surface][vtID + 9]  = xBase + x1;
+            this.m_poly_ver[surface][vtID + 10] = yPosition;
+            this.m_poly_ver[surface][vtID + 11] = zBase + z2;
+
+            // Texcoord
+            int u1 = (i % 2) * 32;
+            int u2 = (i % 2) * 32 + uvDiv;
+            int v1 = (i / 2) * 32;
+            int v2 = (i / 2) * 32 + uvDiv;
+
+            this.m_uv[surface][uvID + 0] = this.m_uv_corner[n6][0] + u1;
+            this.m_uv[surface][uvID + 1] = this.m_uv_corner[n6][1] + v1;
+            this.m_uv[surface][uvID + 2] = this.m_uv_corner[n6][0] + u2;
+            this.m_uv[surface][uvID + 3] = this.m_uv_corner[n6][1] + v1;
+            this.m_uv[surface][uvID + 4] = this.m_uv_corner[n6][0] + u2;
+            this.m_uv[surface][uvID + 5] = this.m_uv_corner[n6][1] + v2;
+            this.m_uv[surface][uvID + 6] = this.m_uv_corner[n6][0] + u1;
+            this.m_uv[surface][uvID + 7] = this.m_uv_corner[n6][1] + v2;
+            
+            // Increment number of polys in surface...
+            this.m_poly_num[surface]++;
         }
     }
 
@@ -4573,222 +4855,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         this.m_warp_trans.mul(this.m_3D_b_trans, this.m_warp_trans);
     }
 
-    private void drawShutter(Graphics3D graphics3D) {
-        try {
-            if (this.m_poly_num[3] > 0) {
-                int n;
-                PrimitiveArray primitiveArray = new PrimitiveArray(4, 12800, this.m_poly_num[3]);
-                int[] nArray = primitiveArray.getVertexArray();
-                for (n = 0; n < this.m_poly_num[3] * 12; ++n) {
-                    nArray[n] = this.m_poly_ver[3][n];
-                }
-                int[] nArray2 = primitiveArray.getNormalArray();
-                for (n = 0; n < this.m_poly_num[3] * 3; ++n) {
-                    nArray2[n] = this.m_poly_nor[3][n];
-                }
-                int[] nArray3 = primitiveArray.getTextureCoordArray();
-                for (n = 0; n < this.m_poly_num[3] * 8; ++n) {
-                    nArray3[n] = this.m_uv[3][n];
-                }
-                this.i_g3d.setViewTrans(this.m_trans);
-                this.i_g3d.setPrimitiveTextureArray(this.m_poly_tex);
-                this.i_g3d.setPrimitiveTexture(0);
-                this.i_g3d.renderPrimitives(primitiveArray, 16);
-            }
-        }
-        catch (Exception exception) {
-            KingsField_P6Canvas.Print("drawShutter render: " + exception + "---error");
-        }
-    }
-
-    private void drawWeapon(Graphics3D graphics3D) {
-        try {
-            this.i_g3d.setViewTrans(this.m_wep_trans);
-            int n = player.currentWeaponID <= 4 ? 262144 : (player.currentWeaponID <= 9 ? 131072 : 0);
-            this.m_wep_fig.setPosture(this.m_wep_act, 0, n);
-            this.i_g3d.renderFigure(this.m_wep_fig);
-            this.i_g3d.renderFigure(this.m_han_fig);
-        }
-        catch (Exception exception) {
-            KingsField_P6Canvas.Print("Weapon & Hand error");
-        }
-    }
-
-    private void drawStatue(Graphics3D graphics3D) {
-        if (this.m_player_area[this.m_statue]) {
-            try {
-                this.i_g3d.setViewTrans(this.m_statue_trans);
-                this.i_g3d.renderFigure(this.m_statue_fig);
-            }
-            catch (Exception exception) {
-                KingsField_P6Canvas.Print("The statue of Liberty!");
-            }
-        }
-    }
-
-    private void drawBox(Graphics3D graphics3D) {
-        for (int i = 0; i < this.m_box_num; ++i) {
-            if (!this.m_player_area[this.m_box[i][0]]) continue;
-            try {
-                this.i_g3d.setViewTrans(this.m_box_trans[i]);
-                if (!this.m_box_flag[this.m_box_number[this.m_stage_ID] + i]) {
-                    this.m_box_near_fig.setPosture(this.m_box_near_act, 1, 0);
-                    this.i_g3d.renderFigure(this.m_box_near_fig);
-                    continue;
-                }
-                if (this.m_mode == 1 && i == this.m_openbox) {
-                    this.m_box_near_fig.setPosture(this.m_box_near_act, 0, this.m_box_frame);
-                    this.i_g3d.renderFigure(this.m_box_near_fig);
-                    continue;
-                }
-                this.i_g3d.renderFigure(this.m_box_far_fig);
-                continue;
-            }
-            catch (Exception exception) {
-                KingsField_P6Canvas.Print("box error:" + i);
-            }
-        }
-    }
-
-    private void drawTaru(Graphics3D graphics3D) {
-        for (int i = 0; i < this.m_taru_num; ++i) {
-            if (!this.m_player_area[this.m_taru[i]]) continue;
-            try {
-                this.i_g3d.setViewTrans(this.m_taru_trans[i]);
-                this.i_g3d.renderFigure(this.m_taru_fig);
-                continue;
-            }
-            catch (Exception exception) {
-                KingsField_P6Canvas.Print("taru error:" + i);
-            }
-        }
-    }
-
-    private void drawItem(Graphics3D graphics3D) {
-        if (this.m_item_id >= 0 && this.m_player_area[this.m_item_grid] && this.m_item_id >= 0 && this.m_player_area[this.m_item_grid]) {
-            try {
-                this.i_g3d.setViewTrans(this.m_item_trans);
-                if (this.m_item_id <= 14) {
-                    this.m_item_fig.setPosture(this.m_wep_act, 0, 393216);
-                    this.i_g3d.renderFigure(this.m_item_fig);
-                } else {
-                    this.m_item_fig.setPosture(this.m_wep_act, 0, 262144);
-                    this.i_g3d.renderFigure(this.m_item_fig);
-                    if (this.m_item_id >= 25 && this.m_item_id <= 34) {
-                        this.i_g3d.setViewTrans(this.m_item_trans2);
-                        this.i_g3d.renderFigure(this.m_item_fig);
-                    }
-                }
-            }
-            catch (Exception exception) {
-                KingsField_P6Canvas.Print("item draw error");
-            }
-        }
-    }
-
-    private void drawEnemy(Graphics3D graphics3D) {
-        for (int i = 0; i < this.m_enemy_num; ++i) {
-            if (this.m_enemy[i][10] != 0 && this.m_enemy[i][10] != 2) continue;
-            this.i_g3d.setViewTrans(this.m_enemy_trans[i]);
-            int n = this.m_enemy[i][4] / 5;
-            try {
-                boolean bl = false;
-                if (this.m_enemy[i][7] == 7) {
-                    bl = true;
-                } else if (this.m_enemy[i][7] == 5 && n == 0) {
-                    bl = true;
-                }
-                if (bl) {
-                    this.m_fig[n].setPosture(this.m_act[n], 2, this.m_enemy[i][8]);
-                    this.i_g3d.renderFigure(this.m_fig[n]);
-                    continue;
-                }
-                this.m_fig[n].setPosture(this.m_act[n], this.m_enemy[i][7], this.m_enemy[i][8]);
-                this.i_g3d.renderFigure(this.m_fig[n]);
-                continue;
-            }
-            catch (Exception exception) {
-                KingsField_P6Canvas.Print("drawEnemy error : " + i + ", " + " a=" + n + ", behv=" + this.m_enemy[i][7] + "frame" + this.m_enemy[i][8]);
-            }
-        }
-    }
-
-    private void drawWarp(Graphics3D graphics3D) {
-        boolean bl = false;
-        if (this.m_mode == 3) {
-            bl = true;
-        } else if (this.m_player_area[this.m_start_grid]) {
-            bl = true;
-        } else if (this.m_player_area[this.m_goal_grid] && !this.m_boss_live) {
-            bl = true;
-        }
-        if (bl) {
-            try {
-                this.i_g3d.setViewTrans(this.m_warp_trans);
-                this.i_g3d.renderFigure(this.m_warp_fig);
-            }
-            catch (Exception exception) {
-                KingsField_P6Canvas.Print("drawWarp: erroer");
-            }
-        }
-    }
-
-    private void drawBackcover(Graphics3D graphics3D) {
-        PrimitiveArray primitiveArray = new PrimitiveArray(4, 1536, 1);
-        if (this.m_mode >= 4) {
-            if (this.m_black == 0) {
-                this.m_black = 1;
-            }
-            try {
-                for (int i = 0; i < this.m_cover_num; ++i) {
-                    int n;
-                    int[] nArray = primitiveArray.getVertexArray();
-                    for (n = 0; n < 12; ++n) {
-                        nArray[n] = this.m_cover_ver[i][n];
-                    }
-                    int[] nArray2 = primitiveArray.getNormalArray();
-                    for (n = 0; n < 3; ++n) {
-                        nArray2[n] = this.m_cover_nor[n];
-                    }
-                    int[] nArray3 = primitiveArray.getColorArray();
-                    for (n = 0; n < 1; ++n) {
-                        nArray3[n] = this.m_cover_colors[0] == this.BLACK ? 0 : (this.m_cover_colors[0] == this.WHITE ? 0xFFFFFF : this.m_cover_colors[0]);
-                    }
-                    this.i_g3d.setViewTrans(this.m_trans);
-                    this.i_g3d.renderPrimitives(primitiveArray, 32);
-                }
-            }
-            catch (Exception exception) {
-                KingsField_P6Canvas.Print("BackCover0 error");
-            }
-        } else if (this.m_scene == 1 || this.m_scene == 7) {
-            try {
-                for (int i = 0; i < this.m_cover_num; ++i) {
-                    int n;
-                    int[] nArray = primitiveArray.getVertexArray();
-                    for (n = 0; n < 12; ++n) {
-                        nArray[n] = this.m_cover_ver[i][n];
-                    }
-                    int[] nArray4 = primitiveArray.getNormalArray();
-                    for (n = 0; n < 3; ++n) {
-                        nArray4[n] = this.m_cover_nor[n];
-                    }
-                    int[] nArray5 = primitiveArray.getColorArray();
-                    for (n = 0; n < 1; ++n) {
-                        nArray5[n] = this.m_cover_colors[0] == this.BLACK ? 0 : (this.m_cover_colors[0] == this.WHITE ? 0xFFFFFF : this.m_cover_colors[0]);
-                    }
-                    this.i_g3d.setViewTrans(this.m_trans);
-                    this.i_g3d.renderPrimitives(primitiveArray, 32);
-                }
-            }
-            catch (Exception exception) {
-                KingsField_P6Canvas.Print("BackCover0 error");
-            }
-        } else {
-            this.m_black = 0;
-        }
-    }
-
     public void drawParameter(Graphics graphics) 
     {
         KFM_Renderer.SetColour(KFM_Renderer.COLOUR_WHITE);
@@ -4833,7 +4899,6 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
             graphics.drawLine(220 + Math.sin(player.rotY) * (-8 + n) / 4096, 18 + Math.cos(player.rotY) * (-8 + n) / 4096, 220 - Math.sin(player.rotY - 16 * n) * 8 / 4096, 18 - Math.cos(player.rotY - 16 * n) * 8 / 4096);
         }
     }
-
 
     /**
      * Handle Drawing UI
@@ -5517,7 +5582,8 @@ public final class KingsField_P6Canvas extends Canvas implements MediaListener
         }
     }
 
-    private void drawCursor(Graphics graphics) {
+    private void drawCursor() 
+    {
         boolean bl = false;
         if (this.m_scene == 1 && this.m_op_frame >= 580) {
             bl = true;
